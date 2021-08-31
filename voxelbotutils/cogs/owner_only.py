@@ -17,7 +17,7 @@ from discord.ext import commands
 from . import utils as vbu
 
 
-class OwnerOnly(vbu.Cog, command_attrs={'hidden': True, 'add_slash_command': False}):
+class OwnerOnly(vbu.Cog, command_attrs={'hidden': False, 'add_slash_command': False}):
     """
     Handles commands that only the owner should be able to run.
     """
