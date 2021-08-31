@@ -4,7 +4,7 @@ from discord.ext import commands
 from . import utils as vbu
 
 
-class InteractionHandler(vbu.Cog, command_attrs={'hidden': True, 'add_slash_command': False}):
+class InteractionHandler(vbu.Cog, command_attrs={'hidden': False, 'add_slash_command': False}):
 
     @vbu.Cog.listener()
     async def on_component_interaction(self, interaction: discord.Interaction):
