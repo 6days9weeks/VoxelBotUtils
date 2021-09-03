@@ -409,6 +409,7 @@ class OwnerOnly(vbu.Cog, command_attrs={'hidden': False, 'add_slash_command': Fa
         sql = self._cleanup_code(sql)
 
         # Get the data we asked for
+        start_time = time.perf_counter()
         async with self.bot.database() as db:
             rows = await db(sql.format(guild=None if ctx.guild is None else ctx.guild.id, author=ctx.author.id, channel=ctx.channel.id))
         if not rows:
@@ -449,11 +450,12 @@ class OwnerOnly(vbu.Cog, command_attrs={'hidden': False, 'add_slash_command': Fa
         lines.insert(0, header_working[:-1])
 
         # Send it out
+        end_time = time.perf_counter()
         string_output = '\n'.join(lines)
         try:
-            await ctx.send(f"```yaml\n{string_output}```")
+            await ctx.send(self.get_execution_time(end_time, start_time) + f"```yaml\n{string_output}```")
         except discord.HTTPException:
-            file = discord.File(io.StringIO(string_output), filename="runsql.txt")
+            file = discord.File(self.get_execution_time(end_time, start_time), io.StringIO(string_output), filename="runsql.txt")
             await ctx.send(file=file)
 
     @vbu.group()
