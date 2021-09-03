@@ -452,8 +452,8 @@ class OwnerOnly(vbu.Cog, command_attrs={'hidden': False, 'add_slash_command': Fa
 
         # Send it out
         string_output = '\n'.join(lines)
-        file = discord.File(self.get_execution_time(end_time, start_time), io.StringIO(string_output), filename="runsql.txt")
-        await ctx.send(file=file)
+        file = discord.File(io.StringIO(string_output), filename="runsql.txt")
+        await ctx.send(self.get_execution_time(end_time, start_time), file=file)
 
     @vbu.group()
     @commands.is_owner()
