@@ -17,7 +17,7 @@ from discord.ext import commands
 from . import utils as vbu
 
 
-class OwnerOnly(vbu.Cog, command_attrs={'hidden': True, 'add_slash_command': False}):
+class OwnerOnly(vbu.Cog, command_attrs={'hidden': False, 'add_slash_command': False}):
     """
     Handles commands that only the owner should be able to run.
     """
@@ -299,7 +299,13 @@ class OwnerOnly(vbu.Cog, command_attrs={'hidden': True, 'add_slash_command': Fal
         text += self.get_execution_time(end_time, start_time)
 
         # Output to chat
-        return await ctx.send(self.get_execution_time(end_time, start_time), file=discord.File(io.StringIO(result), filename=f"ev.{filetype}"))
+        if len(text) > 2000:
+            try:
+                return await ctx.send(self.get_execution_time(end_time, start_time), file=discord.File(io.StringIO(result), filename=f"ev.{filetype}"))
+            except discord.HTTPException:
+                return await ctx.send("I don't have permission to attach files here.")
+        else:
+            return await ctx.send(text)
 
     @vbu.command(aliases=['rld', 'rl'])
     @commands.is_owner()

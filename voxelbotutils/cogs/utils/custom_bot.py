@@ -1,5 +1,6 @@
 import asyncio
 import collections
+import datetime
 import glob
 import logging
 import typing
@@ -274,6 +275,7 @@ class Bot(MinimalBot):
         # Store the startup method so I can see if it completed successfully
         self.startup_method = None
         self.shard_manager = None
+        self.uptime = None
 
         # Regardless of whether we start statsd or not, I want to add the log handler
         handler = AnalyticsLogHandler(self)
@@ -833,6 +835,8 @@ class Bot(MinimalBot):
         await super().close(*args, **kwargs)
 
     async def on_ready(self):
+        if self.uptime is None:
+            self.uptime = datetime.datetime.utcnow()
         self.logger.info(f"Bot connected - {self.user} // {self.user.id}")
         self.logger.info("Setting activity to default")
         await self.set_default_presence()
