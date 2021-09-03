@@ -450,8 +450,11 @@ class OwnerOnly(vbu.Cog, command_attrs={'hidden': False, 'add_slash_command': Fa
 
         # Send it out
         string_output = '\n'.join(lines)
-        file = discord.File(io.StringIO(string_output), filename="runsql.txt")
-        await ctx.send(file=file)
+        try:
+            await ctx.send(f"```yaml\n{string_output}```")
+        except discord.HTTPException:
+            file = discord.File(io.StringIO(string_output), filename="runsql.txt")
+            await ctx.send(file=file)
 
     @vbu.group()
     @commands.is_owner()
