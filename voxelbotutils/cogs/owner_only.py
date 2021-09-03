@@ -414,6 +414,7 @@ class OwnerOnly(vbu.Cog, command_attrs={'hidden': False, 'add_slash_command': Fa
             rows = await db(sql.format(guild=None if ctx.guild is None else ctx.guild.id, author=ctx.author.id, channel=ctx.channel.id))
         if not rows:
             return await ctx.send("No content.")
+        end_time = time.perf_counter()
 
         # Set up some metadata for us to format things nicely
         headers = list(rows[0].keys())
@@ -450,13 +451,9 @@ class OwnerOnly(vbu.Cog, command_attrs={'hidden': False, 'add_slash_command': Fa
         lines.insert(0, header_working[:-1])
 
         # Send it out
-        end_time = time.perf_counter()
         string_output = '\n'.join(lines)
-        try:
-            await ctx.send(self.get_execution_time(end_time, start_time) + f"```yaml\n{string_output}```")
-        except discord.HTTPException:
-            file = discord.File(self.get_execution_time(end_time, start_time), io.StringIO(string_output), filename="runsql.txt")
-            await ctx.send(file=file)
+        file = discord.File(self.get_execution_time(end_time, start_time), io.StringIO(string_output), filename="runsql.txt")
+        await ctx.send(file=file)
 
     @vbu.group()
     @commands.is_owner()
