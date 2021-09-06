@@ -188,14 +188,14 @@ class Menu(MenuDisplayable):
                     output_strings.append(f"\N{BULLET} {output}")
                 style = (discord.ui.ButtonStyle.secondary if isinstance(i._callback, Menu) else None) or i._button_style or discord.ui.ButtonStyle.primary
                 buttons.append(discord.ui.Button(
-                    i.component_display,
+                    label=i.component_display,
                     custom_id=i.component_display,
                     style=style,
                 ))
         ctx.database = None
 
         # Add a done button
-        buttons.append(discord.ui.Button(label="Done", custom_id="Done", style=discord.ui.ButtonStyle.sucess))
+        buttons.append(discord.ui.Button(label="Done", custom_id="Done", style=discord.ui.ButtonStyle.success))
 
         # Output
         components = discord.ui.MessageComponents.add_buttons_with_rows(*buttons)
