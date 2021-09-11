@@ -38,7 +38,7 @@ if version.endswith(('a', 'b', 'rc')):
 
 # Here are the requirements
 requirements = [
-    "novus>=0.0.1,<0.1",
+    "novus>=0.0.3,<0.1",
     "toml>=0.10.2,<0.11",
     "asyncpg>=0.21.0,<0.22",
     "aioredis>=1.3,<2.0",
@@ -55,7 +55,7 @@ extras = {
         "cryptography>=3.3.1,<4.0",
         "aiohttp_jinja2>=1.4.2,<2.0",
         "aiohttp_session>=2.9.0,<3.0",
-        "jinja2>=2.11.2,<3.0",
+        "jinja2>=3.0.0,<4.0.0",
         "markdown>=3.3.3,<4.0",
         "htmlmin>=0.1.12,<0.2",
     ],
@@ -91,5 +91,8 @@ setuptools.setup(
             "voxelbotutils=voxelbotutils.__main__:main",
             "vbu=voxelbotutils.__main__:main",
         ],
+    },
+    package_data={
+        "voxelbotutils": ["config/*"]
     },
 )

@@ -9,9 +9,10 @@ import io
 import traceback
 
 import discord
+from discord.ext import commands
 import toml
 
-from .cogs.utils.database import DatabaseConnection
+from .cogs.utils.database import DatabaseWrapper
 from .cogs.utils.redis import RedisConnection
 from .cogs.utils.statsd import StatsdConnection
 from .cogs.utils.custom_bot import Bot
@@ -154,7 +155,7 @@ def _set_default_log_level(logger_name, log_filter, formatter, loglevel):
 
 
 def create_subclassed_loggers():
-    DatabaseConnection.logger = logging.getLogger("vbu.database")
+    DatabaseWrapper.logger = logging.getLogger("vbu.database")
     RedisConnection.logger = logging.getLogger("vbu.redis")
     StatsdConnection.logger = logging.getLogger("vbu.statsd")
 
@@ -226,7 +227,7 @@ async def start_database_pool(config: dict) -> None:
     # Connect the database pool
     logger.info("Creating database pool")
     try:
-        await DatabaseConnection.create_pool(config['database'])
+        await DatabaseWrapper.create_pool(config['database'])
     except KeyError:
         raise Exception("KeyError creating database pool - is there a 'database' object in the config?")
     except ConnectionRefusedError:
@@ -238,7 +239,7 @@ async def start_database_pool(config: dict) -> None:
         raise Exception("Error creating database pool")
     logger.info("Created database pool successfully")
     logger.info("Creating initial database tables")
-    async with DatabaseConnection() as db:
+    async with DatabaseWrapper() as db:
         await create_initial_database(db)
 
 
@@ -395,7 +396,89 @@ def run_bot(args: argparse.Namespace) -> None:
     if bot.config.get('database', {}).get('enabled', False):
         logger.info("Closing database pool")
         try:
-            loop.run_until_complete(asyncio.wait_for(DatabaseConnection.pool.close(), timeout=30.0))
+            loop.run_until_complete(asyncio.wait_for(DatabaseWrapper.pool.close(), timeout=30.0))
+        except asyncio.TimeoutError:
+            logger.error("Couldn't gracefully close the database connection pool within 30 seconds")
+    if bot.config.get('redis', {}).get('enabled', False):
+        logger.info("Closing redis pool")
+        RedisConnection.pool.close()
+
+    logger.info("Closing asyncio loop")
+    loop.stop()
+    loop.close()
+
+
+def run_interactions(args: argparse.Namespace) -> None:
+    """
+    Starts the bot, connects the database, runs the async loop forever.
+
+    Args:
+        args (argparse.Namespace): The arguments namespace that wants to be run.
+    """
+
+    from aiohttp.web import Application, AppRunner, TCPSite
+    os.chdir(args.bot_directory)
+    set_event_loop()
+
+    # And run file
+    bot = Bot(config_file=args.config_file, intents=discord.Intents.none())
+    loop = bot.loop
+    EventLoopCallbackHandler.bot = bot
+
+    # Set up loggers
+    bot.logger = logger.getChild("bot")
+    set_default_log_levels(args)
+
+    # Connect the database pool
+    if bot.config.get('database', {}).get('enabled', False):
+        db_connect_task = start_database_pool(bot.config)
+        loop.run_until_complete(db_connect_task)
+
+    # Connect the redis pool
+    if bot.config.get('redis', {}).get('enabled', False):
+        re_connect = start_redis_pool(bot.config)
+        loop.run_until_complete(re_connect)
+
+    # Load the bot's extensions
+    logger.info('Loading extensions... ')
+    bot.load_all_extensions()
+
+    # Run the bot
+    logger.info("Logging in bot")
+    loop.run_until_complete(bot.login())
+    websocket_task = None
+    if args.connect:
+        logger.info("Connecting bot to gateway")
+        websocket_task = loop.create_task(bot.connect())
+
+    # Create the webserver
+    app = Application(loop=asyncio.get_event_loop(), debug=args.debug)
+    app.router.add_routes(commands.get_interaction_route_table(bot, bot.config.get("pubkey", ""), path=args.path))
+
+    # Start the HTTP server
+    logger.info("Creating webserver...")
+    application = AppRunner(app)
+    loop.run_until_complete(application.setup())
+    webserver = TCPSite(application, host=args.host, port=args.port)
+
+    # Start the webserver
+    loop.run_until_complete(webserver.start())
+    logger.info(f"Server started - http://{args.host}:{args.port}/")
+
+    # This is the forever loop
+    try:
+        logger.info("Running webserver")
+        loop.run_forever()
+    except KeyboardInterrupt:
+        pass
+
+    # We're now done running the webserver, time to clean up and close
+    if websocket_task:
+        websocket_task.cancel()
+    if bot.config.get('database', {}).get('enabled', False):
+        logger.info("Closing database pool")
+        try:
+            loop.run_until_complete(asyncio.wait_for(DatabaseWrapper.pool.close(), timeout=30.0))
         except asyncio.TimeoutError:
             logger.error("Couldn't gracefully close the database connection pool within 30 seconds")
     if bot.config.get('redis', {}).get('enabled', False):
@@ -474,7 +557,6 @@ def run_website(args: argparse.Namespace) -> None:
             '(?:<|(?:&lt;))@!?(?P<userid>\\d{16,23})(?:>|(?:&gt;))',
             lambda g: f'<span class="chatlog__mention">@{get_display_name(g)}</span>',
             string,
-            string,
             re.IGNORECASE | re.MULTILINE,
         )
 
@@ -501,7 +583,7 @@ def run_website(args: argparse.Namespace) -> None:
     jinja_env.filters['display_emojis'] = display_emojis
 
     # Add our connections and their loggers
-    app['database'] = DatabaseConnection
+    app['database'] = DatabaseWrapper
     app['redis'] = RedisConnection
     app['logger'] = logger.getChild("route")
     app['stats'] = StatsdConnection
@@ -557,7 +639,7 @@ def run_website(args: argparse.Namespace) -> None:
     if config.get('database', {}).get('enabled', False):
         logger.info("Closing database pool")
         try:
-            loop.run_until_complete(asyncio.wait_for(DatabaseConnection.pool.close(), timeout=30.0))
+            loop.run_until_complete(asyncio.wait_for(DatabaseWrapper.pool.close(), timeout=30.0))
         except asyncio.TimeoutError:
             logger.error("Couldn't gracefully close the database connection pool within 30 seconds")
     if config.get('redis', {}).get('enabled', False):
@@ -699,7 +781,7 @@ def run_shell(args: argparse.Namespace) -> None:
     if bot.config.get('database', {}).get('enabled', False):
         logger.info("Closing database pool")
         try:
-            loop.run_until_complete(asyncio.wait_for(DatabaseConnection.pool.close(), timeout=30.0))
+            loop.run_until_complete(asyncio.wait_for(DatabaseWrapper.pool.close(), timeout=30.0))
         except asyncio.TimeoutError:
             logger.error("Couldn't gracefully close the database connection pool within 30 seconds")
     if bot.config.get('redis', {}).get('enabled', False):

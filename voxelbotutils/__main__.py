@@ -3,13 +3,22 @@ import typing
 import pathlib
 import textwrap
 
-from .runner import run_bot, run_website, run_sharder, run_shell, run_modify_commands
+from .runner import run_bot, run_website, run_sharder, run_shell, run_modify_commands, run_interactions
 
 
-def create_file(*path, content: str = None):
+def get_path_relative_to_file(path) -> pathlib.Path:
+    here = pathlib.Path(__file__).parent.resolve()
+    return here.joinpath(path)
+
+
+def create_file(*path: str, content: typing.Optional[typing.Union[str, pathlib.Path]] = None):
     joined_folder_path = pathlib.Path("./").joinpath(*path[:-1])
     joined_file_path = pathlib.Path("./").joinpath(*path)
     if content:
+        if isinstance(content, pathlib.Path):
+            filename = content
+            with open(filename) as a:
+                content = a.read()
         joined_folder_path.mkdir(parents=True, exist_ok=True)
         try:
             with open(joined_file_path, "x") as a:
@@ -45,6 +54,7 @@ def get_default_program_arguments() -> argparse.ArgumentParser:
     runner_subparser.required = True
     bot_subparser = runner_subparser.add_parser("run-bot")
     website_subparser = runner_subparser.add_parser("run-website")
+    interactions_subparser = runner_subparser.add_parser("run-interactions")
     sharder_subparser = runner_subparser.add_parser("run-sharder")
     shell_subparser = runner_subparser.add_parser("run-shell")
     application_subparser = runner_subparser.add_parser("commands")
@@ -65,8 +75,18 @@ def get_default_program_arguments() -> argparse.ArgumentParser:
     website_subparser.add_argument("config_file", nargs="?", default="config/website.toml", help="The configuration for the website.")
     website_subparser.add_argument("--host", nargs="?", default="0.0.0.0", help="The host IP to run the website on.")
     website_subparser.add_argument("--port", nargs="?", type=int, default="8080", help="The port to run the website with.")
-    website_subparser.add_argument("--debug", action="store_true", default=False, help="Whether or not to run the website in debug mode")
+    website_subparser.add_argument("--debug", action="store_true", default=False, help="Whether or not to run the website in debug mode.")
     website_subparser.add_argument("--loglevel", nargs="?", default="INFO", help="Global logging level - probably most useful is INFO and DEBUG.", choices=LOGLEVEL_CHOICES)
+
+    # Set up the interactions server arguments
+    interactions_subparser.add_argument("bot_directory", nargs="?", default=".", help="The directory containing a config and a cogs folder for the bot to run.")
+    interactions_subparser.add_argument("config_file", nargs="?", default="config/config.toml", help="The configuration for the bot.")
+    interactions_subparser.add_argument("--host", nargs="?", default="0.0.0.0", help="The host IP to run the website on.")
+    interactions_subparser.add_argument("--port", nargs="?", type=int, default="8080", help="The port to run the website with.")
+    interactions_subparser.add_argument("--path", nargs="?", type=str, default="/interactions", help="The path to run the interactions endpoint on.")
+    interactions_subparser.add_argument("--connect", action="store_true", default=False, help="Whether you want your bot to connect to the Discord gateway.")
+    interactions_subparser.add_argument("--debug", action="store_true", default=False, help="Whether or not to run the website in debug mode.")
+    interactions_subparser.add_argument("--loglevel", nargs="?", default="INFO", help="Global logging level - probably most useful is INFO and DEBUG.", choices=LOGLEVEL_CHOICES)
 
     # Set up the sharder arguments
     sharder_subparser.add_argument("config_file", nargs="?", default="config/config.toml", help="The configuration for the bot.")
@@ -151,25 +171,24 @@ def main():
     # Let's see if we copyin bois
     if args.subcommand == "create-config":
         config_type = args.config_type[0]
-        from . import config
         if config_type in ["website", "all"]:
-            create_file("config", "website.toml", content=config.web_config_file.lstrip())
-            create_file("config", "website.example.toml", content=config.web_config_file.lstrip())
-            create_file("config", "database.pgsql", content=config.database_file.lstrip())
+            create_file("config", "website.toml", content=get_path_relative_to_file("config/web_config_example_file.toml"))
+            create_file("config", "website.example.toml", content=get_path_relative_to_file("config/web_config_example_file.toml"))
+            create_file("config", "database.pgsql", content=get_path_relative_to_file("config/database_base_file.pgsql"))
             create_file("_run_website.sh", content="vbu run-website .\n")
             create_file(".gitignore", content="__pycache__/\n.venv/\nconfig/config.toml\nconfig/website.toml\n")
             create_file("requirements.txt", content=f"voxelbotutils[web]>={__version__},<{next_version}\n")
-            create_file("website", "frontend.py", content=config.website_frontend_content.lstrip())
-            create_file("website", "backend.py", content=config.website_backend_content.lstrip())
+            create_file("website", "frontend.py", content=get_path_relative_to_file("config/website_frontend_content.py"))
+            create_file("website", "backend.py", content=get_path_relative_to_file("config/website_backend_content.py"))
             create_file("website", "static", ".gitkeep", content="\n")
             create_file("website", "templates", ".gitkeep", content="\n")
             create_file(".venv")
             print("Created website config file.")
         if config_type in ["bot", "all"]:
-            create_file("config", "config.toml", content=config.config_file.lstrip())
-            create_file("config", "config.example.toml", content=config.config_file.lstrip())
-            create_file("config", "database.pgsql", content=config.database_file.lstrip())
-            create_file("cogs", "ping_command.py", content=config.cog_example.lstrip())
+            create_file("config", "config.toml", content=get_path_relative_to_file("config/config_example_file.toml"))
+            create_file("config", "config.example.toml", content=get_path_relative_to_file("config/config_example_file.toml"))
+            create_file("config", "database.pgsql", content=get_path_relative_to_file("config/database_base_file.pgsql"))
+            create_file("cogs", "ping_command.py", content=get_path_relative_to_file("config/cog_example_file.py"))
             create_file("_run_bot.sh", content="vbu run-bot .\n")
             create_file(".gitignore", content="__pycache__/\nconfig/config.toml\nconfig/website.toml\n")
             create_file("requirements.txt", content=f"voxelbotutils>={__version__},<{next_version}\n")
@@ -180,12 +199,13 @@ def main():
     # See if we want to check the config file
     elif args.subcommand == "check-config":
         config_type = args.config_type[0]
-        from . import config
         import toml
         if config_type == "website":
-            base_config_file_text = config.web_config_file.lstrip()
+            with open(get_path_relative_to_file("config/web_config_example_file.toml")) as a:
+                base_config_file_text = a.read()
         elif config_type == "bot":
-            base_config_file_text = config.config_file.lstrip()
+            with open(get_path_relative_to_file("config/config_example_file.toml")) as a:
+                base_config_file_text = a.read()
         else:
             exit(1)
         base_config_file = toml.loads(base_config_file_text)
@@ -208,6 +228,8 @@ def main():
     # Run things
     elif args.subcommand == "run-bot":
         run_bot(args)
+    elif args.subcommand == "run-interactions":
+        run_interactions(args)
     elif args.subcommand == "run-website":
         run_website(args)
     elif args.subcommand == "run-sharder":
