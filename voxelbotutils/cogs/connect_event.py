@@ -34,6 +34,7 @@ class ConnectEvent(vbu.Cog):
         event_webhook: discord.Webhook = self.bot.get_event_webhook(event_name)
         if not event_webhook:
             return False
+        # I probably need to find a better way to do this but for now this works
         try:
             thread_id = self.bot.config.get('event_webhook')['event_webhook_thread']
         except KeyError:
