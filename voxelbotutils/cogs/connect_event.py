@@ -51,7 +51,7 @@ class ConnectEvent(vbu.Cog):
                     allowed_mentions=discord.AllowedMentions.none(),
                     thread=discord.Object(thread_id),
                 )
-             else:
+            else:
                 await event_webhook.send(
                     text,
                     username=username,
