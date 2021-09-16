@@ -35,16 +35,29 @@ class ConnectEvent(vbu.Cog):
         if not event_webhook:
             return False
         try:
+            thread_id = self.bot.config.get('event_webhook')['event_webhook_thread']
+        except KeyError:
+            thread_id = None
+        try:
             avatar_url = str(self.bot.user.display_avatar.url)
         except Exception:
             avatar_url = None
         try:
-            await event_webhook.send(
-                text,
-                username=username,
-                avatar_url=avatar_url,
-                allowed_mentions=discord.AllowedMentions.none(),
-            )
+            if thread_id != None:
+                await event_webhook.send(
+                    text,
+                    username=username,
+                    avatar_url=avatar_url,
+                    allowed_mentions=discord.AllowedMentions.none(),
+                    thread=discord.Object(thread_id),
+                )
+             else:
+                await event_webhook.send(
+                    text,
+                    username=username,
+                    avatar_url=avatar_url,
+                    allowed_mentions=discord.AllowedMentions.none(),
+                )
         except discord.HTTPException as e:
             self.logger.error(f"Failed to send webhook for event {event_name} - {e}")
             return False
