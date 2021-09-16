@@ -278,7 +278,13 @@ class OwnerOnly(vbu.Cog, command_attrs={'hidden': False, 'add_slash_command': Fa
         if ret is None:
             # It might have printed something
             if stdout_value is not None:
-                await ctx.send(f'```py\n{stdout_value}\n```{self.get_execution_time(end_time, start_time)}')
+                if len(stdout_value) > 2000:
+                    try:
+                        return await ctx.send(self.get_execution_time(end_time, start_time), file=discord.File(io.StringIO(stdout_value), filename="ev.py"))
+                    except discord.HTTPException:
+                        return await ctx.send("I don't have permission to attach files here.")
+                else:
+                    return await ctx.send(f'```py\n{stdout_value}\n```{self.get_execution_time(end_time, start_time)}')
             return
 
         # If the function did return a value
