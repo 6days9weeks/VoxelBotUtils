@@ -1,3 +1,5 @@
+import io
+
 import discord
 from discord.ext import commands
 
@@ -28,7 +30,8 @@ class InteractionHandler(vbu.Cog, command_attrs={'hidden': False, 'add_slash_com
         guild = guild_id if guild_id is None else discord.Object(guild_id)
         added_commands = await self.bot.register_application_commands(guild=guild)
         output_strings = "\n".join([f"\N{BULLET} `{i!r}`" for i in added_commands])
-        await ctx.send(f"Added slash commands:\n{output_strings}\n")
+        file = discord.File(io.StringIO(output_strings), filename=f"commands.md")
+        await ctx.send(f"Added slash commands", file=file)
 
     @vbu.command(aliases=['removeslashcommands', 'removeslashcommand', 'removeapplicationcommand'])
     @commands.is_owner()
