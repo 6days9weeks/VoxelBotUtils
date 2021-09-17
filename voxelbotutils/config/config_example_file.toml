@@ -18,6 +18,8 @@ bot_support_role_id = 0  # The ID used to determine whether or not the user is p
 # Event webhook information - some of the events (noted) will be sent to the specified url.
 [event_webhook]
     event_webhook_url = ""
+    event_webhook_thread =
+    event_dm_thread =
     [event_webhook.events]  # If you use true then your `event_webhook_url` will be used.
         guild_join = false
         guild_remove = false
@@ -26,6 +28,7 @@ bot_support_role_id = 0  # The ID used to determine whether or not the user is p
         shard_ready = false
         bot_ready = false
         unhandled_error = true
+        dm_logger = False
 
 # The intents that the bot should start with
 [intents]
@@ -117,7 +120,7 @@ bot_support_role_id = 0  # The ID used to determine whether or not the user is p
 [embed]
     enabled = false  # Whether or not to embed messages by default.
     content = ""  # Default content to be added to the embed message.
-    colour = 0  # A specific colour for the embed - 0 means random.
+    colour = 0  # A specific colour for the embed use decimal - 0 means random.
     [embed.author]
         enabled = false
         name = "{ctx.bot.user}"
