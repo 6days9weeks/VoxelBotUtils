@@ -93,9 +93,12 @@ class Embeddify:
             return data
 
         # Okay it's embed time
+        colour = cls.bot.config.get("embed", dict()).get("colour", 0)
         embed = discord.Embed(
             description=data.pop("content"),
-            colour=discord.Colour.random() or cls.bot.config.get("embed", dict()).get("colour", 0),
+            colour=discord.Colour.random() 
+            if colour == 0 
+            else int(colour),
         )
         cls.bot.set_footer_from_config(embed)
 
