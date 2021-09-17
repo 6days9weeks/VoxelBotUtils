@@ -1,6 +1,5 @@
 import asyncio
 import collections
-import datetime
 import glob
 import logging
 import typing
@@ -847,7 +846,7 @@ class Bot(MinimalBot):
 
     async def on_ready(self):
         if self.uptime is None:
-            self.uptime = datetime.datetime.utcnow()
+            self.uptime = discord.utils.utcnow()
         self.logger.info(f"Bot connected - {self.user} // {self.user.id}")
         self.logger.info("Setting activity to default")
         await self.set_default_presence()
