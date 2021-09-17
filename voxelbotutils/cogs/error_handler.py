@@ -301,17 +301,33 @@ class ErrorHandler(vbu.Cog):
             avatar_url = str(self.bot.user.display_avatar.url)
         except Exception:
             avatar_url = None
+        # I probably need to find a better way to do this but for now this works
+        try:
+            thread_id = self.bot.config.get('event_webhook')['event_webhook_thread']
+        except KeyError:
+            thread_id = None
+            
         if event_webhook:
             file_handle.seek(0)
             try:
                 file = discord.File(file_handle, filename="error_log.py")
-                await event_webhook.send(
-                    error_text,
-                    file=file,
-                    username=f"{self.bot.user.name} - Error",
-                    avatar_url=avatar_url,
-                    allowed_mentions=discord.AllowedMentions.none(),
-                )
+                if thread_id != None:
+                    await event_webhook.send(
+                        error_text,
+                        file=file,
+                        username=f"{self.bot.user.name} - Error",
+                        avatar_url=avatar_url,
+                        allowed_mentions=discord.AllowedMentions.none(),
+                        thread=discord.Object(thread_id),
+                    )
+                else:
+                    await event_webhook.send(
+                        error_text,
+                        file=file,
+                        username=f"{self.bot.user.name} - Error",
+                        avatar_url=avatar_url,
+                        allowed_mentions=discord.AllowedMentions.none(),
+                    )
             except discord.HTTPException as e:
                 self.logger.error(f"Failed to send webhook for event unhandled_error - {e}")
 
