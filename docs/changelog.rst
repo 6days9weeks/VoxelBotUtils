@@ -3,6 +3,26 @@ Changelog
 
 A human-readable list of changes between versions.
 
+0.8.2
+--------------------------------------
+
+New Features
+"""""""""""""""""""""""""
+
+* Add ``guild_only`` to :func:`menus.Menu.create_cog`.
+
+Changed Features
+"""""""""""""""""""""""""
+
+* Readd ``image_url`` kwarg to ``Embeddify.send``.
+* Oauth and bot info now default to false.
+* ``addslashcommands`` and ``ev`` now output to file if their content is too long.
+
+Bugs Fixed
+"""""""""""""""""""""""""""""""""""""""
+
+* Add missing ``await``s to transaction object.
+
 0.8.0
 --------------------------------------
 
