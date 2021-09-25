@@ -18,8 +18,8 @@ bot_support_role_id = 0  # The ID used to determine whether or not the user is p
 # Event webhook information - some of the events (noted) will be sent to the specified url.
 [event_webhook]
     event_webhook_url = ""
-    event_webhook_thread =
-    event_dm_thread =
+    event_webhook_thread = ""
+    event_dm_thread = ""
     [event_webhook.events]  # If you use true then your `event_webhook_url` will be used.
         guild_join = false
         guild_remove = false
