@@ -451,7 +451,7 @@ class Bot(MinimalBot):
             data['redirect_uri'] = redirect_uri
         if guild_id:
             data['guild'] = discord.Object(guild_id)
-        if response_type:
+        if response_type != None:
             data['response_type'] = response_type
 
         # Return url
