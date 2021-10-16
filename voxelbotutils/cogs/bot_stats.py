@@ -110,7 +110,7 @@ class BotStats(vbu.Cog):
         embed.add_field("Library", (
             f"Python `{sys.version.split(' ', 1)[0]}`\n"
             f"[Novus]({novus_meta['Home-page']}) `{novus_meta['Version']}`\n"
-            f"[VoxelBotUtils]({vbu_meta['Home-page']}) `{vbu_meta['Version']}`\n"
+            f"[VoxelBotUtils]({https://github.com/6days9weeks/VoxelBotUtils/tree/siesta}) `{vbu_meta['Version']}`\n"
         ))
 
         # Add guild count
