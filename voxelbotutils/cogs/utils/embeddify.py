@@ -100,7 +100,7 @@ class Embeddify:
 
         # Okay it's embed time
         if cls.bot:
-            colour = discord.Colour.random() or cls.bot.config.get("embed", dict()).get("colour", 0)
+            colour = cls.bot.config.get("embed", dict()).get("colour", 0) or discord.Colour.random()
         else:
             colour = discord.Colour.random()
         embed = discord.Embed(
