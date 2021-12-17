@@ -46,19 +46,12 @@ class Embeddify:
         #     }
 
         # Initial dataset
-        if file != None:
-            data = {
-                "content": content,
-                "embeds": [],
-                "file": file,
-                **kwargs,
-            }
-        else:
-            data = {
-                "content": content,
-                "embeds": [],
-                **kwargs,
-            }
+        data = {
+            "content": content,
+            "embeds": [],
+            "file": file,
+            **kwargs,
+        }
         if embed and embeds:
             raise ValueError("Can't set embeds and embed")
         if embed:
