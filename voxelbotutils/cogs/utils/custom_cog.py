@@ -1,14 +1,22 @@
+from __future__ import annotations
+
+import typing
 import logging
 import re
 
 from discord.ext.commands import Cog as OriginalCog
 
-from .custom_bot import Bot
-from .database import DatabaseWrapper
 from .redis import RedisChannelHandler
 
+if typing.TYPE_CHECKING:
+    from .custom_bot import Bot
+    from .database import DatabaseWrapper
 
-class Cog(OriginalCog):
+
+BotT = typing.TypeVar("BotT", bound="Bot")
+
+
+class Cog(OriginalCog, typing.Generic[BotT]):
     """
     A slightly modified cog class to allow for the ``cache_setup`` method and for the class' ``logger`` instance.
 
@@ -29,7 +37,7 @@ class Cog(OriginalCog):
                 c.qualified_name  # "API Commands"
     """
 
-    def __init__(self, bot: Bot, logger_name: str = None):
+    def __init__(self, bot: BotT, logger_name: str = None):
         """
         Args:
             bot (Bot): The bot that should be added to the cog.

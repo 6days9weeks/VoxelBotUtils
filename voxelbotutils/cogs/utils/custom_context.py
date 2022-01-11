@@ -1,7 +1,11 @@
+import typing
 import collections
 
 import discord
 from discord.ext import commands
+
+
+GuildT = typing.TypeVar("GuildT", None, discord.Guild, typing.Optional[discord.Guild])
 
 
 FakeResponse = collections.namedtuple("FakeResponse", ["status", "reason"])
@@ -9,7 +13,7 @@ FakeResponse = collections.namedtuple("FakeResponse", ["status", "reason"])
 
 class AbstractMentionable(discord.Object):
     """
-    A fake mentionable object for use anywhere that you can't catch an error on a :code:`.mention` being None.
+    A fake mentionable object for use anywhere that you can't catch an error on a ``.mention`` being ``None``.
 
     Attributes:
         id (int): The ID of the mentionable.
@@ -21,8 +25,8 @@ class AbstractMentionable(discord.Object):
         """
         Args:
             id (int): The ID of the mentionable.
-            mention (str): The string to be returned when :code:`.mention` is run.
-            name (str): The string to be returned when :code:`.name` is run.
+            mention (str): The string to be returned when ``.mention`` is run.
+            name (str): The string to be returned when ``.name`` is run.
         """
 
         self.id = id
@@ -37,6 +41,7 @@ class ContextMixin:
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
+        self.original_author_id: typing.Optional[int]
         try:
             self.original_author_id = self.author.id
         except AttributeError:
@@ -81,7 +86,7 @@ class ContextMixin:
         return AbstractMentionable(role_id, fallback, fallback)
 
 
-class Context(commands.Context, ContextMixin):
+class Context(commands.Context, ContextMixin, typing.Generic[GuildT]):
     """
     A modified version of the default :class:`discord.ext.commands.Context`.
 
@@ -89,6 +94,8 @@ class Context(commands.Context, ContextMixin):
         original_author_id (int): The ID of the original person to run the command. Persists through
             the bot's ``sudo`` command, if you want to check the original author.
     """
+
+    guild: GuildT
 
     async def okay(self) -> None:
         """
@@ -98,7 +105,9 @@ class Context(commands.Context, ContextMixin):
         return await self.message.add_reaction("\N{OK HAND SIGN}")
 
 
-class SlashContext(commands.SlashContext, ContextMixin):
+class SlashContext(commands.SlashContext, ContextMixin, typing.Generic[GuildT]):
+
+    guild: GuildT
 
     async def okay(self) -> None:
         """
@@ -117,7 +126,7 @@ class _NoRequestTyping(object):
         pass
 
 
-class _FakeStateMessage(object):
+class _FakeStateMessage(discord.Message):
 
     def __init__(self, state):
         self._state = state
@@ -126,9 +135,9 @@ class _FakeStateMessage(object):
 class PrintContext(Context):
 
     def __init__(self, bot):
-        self.message = _FakeStateMessage(bot._connection),
-        self.bot = bot,
-        self.prefix = ">>> ",
+        self.message = _FakeStateMessage(bot._connection)
+        self.bot = bot
+        self.prefix = ">>> "
 
     async def send(self, content, *args, **kwargs):
         print(content, args, kwargs)

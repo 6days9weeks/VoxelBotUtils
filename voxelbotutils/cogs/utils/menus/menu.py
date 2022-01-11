@@ -16,7 +16,9 @@ from ..custom_cog import Cog
 from ..custom_command import Command
 
 if typing.TYPE_CHECKING:
-    ContextCallable = typing.Callable[[commands.Context], None]
+    from ..custom_context import Context
+
+    ContextCallable = typing.Callable[[Context], None]
     AwaitableContextCallable = typing.Awaitable[ContextCallable]
     MaybeCoroContextCallable = typing.Union[ContextCallable, AwaitableContextCallable]
 
@@ -37,7 +39,11 @@ class Menu(MenuDisplayable):
     callbacks = MenuCallbacks
 
     def __init__(
-            self, *options: Option, display: str = None, component_display: str = None):
+            self,
+            *options: Option,
+            display: str = None,
+            component_display: str = None,
+            ):
         """
         Args:
             options (typing.List[Option]): A list of options that should be displayed in the menu.
@@ -82,7 +88,13 @@ class Menu(MenuDisplayable):
                 nested_self.bot.remove_command(nested_self.settings.name)
                 super().cog_unload()
 
-            @commands.command(cls=Command, name=name, aliases=aliases, **command_kwargs)
+            @commands.command(
+                cls=Command,
+                name=name,
+                aliases=aliases,
+                application_command_meta=command_kwargs.pop("application_command_meta", commands.ApplicationCommandMeta()),
+                **command_kwargs,
+            )
             @commands.has_permissions(**{i: True for i in permissions})
             @commands.bot_has_permissions(send_messages=True, embed_links=True)
             async def settings(nested_self, ctx):
@@ -102,7 +114,7 @@ class Menu(MenuDisplayable):
             return NestedCog(bot)
         return NestedCog
 
-    async def get_options(self, ctx: commands.Context, force_regenerate: bool = False) -> typing.List[Option]:
+    async def get_options(self, ctx: Context, force_regenerate: bool = False) -> typing.List[Option]:
         """
         Get all of the options for an instance.
         This method has an open database instance in :code:`ctx.database`.
@@ -110,7 +122,7 @@ class Menu(MenuDisplayable):
 
         return self._options
 
-    async def start(self, ctx: commands.Context, delete_message: bool = False) -> None:
+    async def start(self, ctx: Context, delete_message: bool = False) -> None:
         """
         Run the menu instance.
 
@@ -184,7 +196,7 @@ class Menu(MenuDisplayable):
         except Exception:
             pass
 
-    async def get_sendable_data(self, ctx: commands.Context) -> dict:
+    async def get_sendable_data(self, ctx: Context) -> dict:
         """
         Gets a dictionary of sendable objects to unpack for the :func:`start` method.
         """
@@ -230,16 +242,21 @@ class MenuIterable(Menu, Option):
     allow_none = False
 
     def __init__(
-            self, *, select_sql: str, insert_sql: str, delete_sql: str,
-            row_text_display: typing.Callable[[commands.Context, dict], str],
-            row_component_display: typing.Callable[[commands.Context, dict], str],
+            self,
+            *,
+            select_sql: str,
+            insert_sql: str,
+            delete_sql: str,
+            row_text_display: typing.Callable[[Context, dict], str],
+            row_component_display: typing.Callable[[Context, dict], str],
             converters: typing.List[Converter],
-            select_sql_args: typing.Callable[[commands.Context], typing.List[typing.Any]] = None,
-            insert_sql_args: typing.Callable[[commands.Context, typing.List[typing.Any]], typing.List[typing.Any]] = None,
-            delete_sql_args: typing.Callable[[commands.Context, dict], typing.List[typing.Any]] = None,
-            cache_callback: typing.Optional[typing.Callable[[commands.Context, typing.List[typing.Any]], None]] = None,
-            cache_delete_callback: typing.Optional[typing.Callable[[commands.Context, typing.List[typing.Any]], None]] = None,
-            cache_delete_args: typing.Optional[typing.Callable[[dict], typing.List[typing.Any]]] = None):
+            select_sql_args: typing.Callable[[Context], typing.Iterable[typing.Any]] = None,
+            insert_sql_args: typing.Callable[[Context, typing.List[typing.Any]], typing.Iterable[typing.Any]] = None,
+            delete_sql_args: typing.Callable[[Context, dict], typing.Iterable[typing.Any]] = None,
+            cache_callback: typing.Optional[typing.Callable[[Context, typing.List[typing.Any]], None]] = None,
+            cache_delete_callback: typing.Optional[typing.Callable[[Context, typing.List[typing.Any]], None]] = None,
+            cache_delete_args: typing.Optional[typing.Callable[[dict], typing.Iterable[typing.Any]]] = None,
+            ):
         """
         Args:
             select_sql (str): The SQL that should be used to select the rows to be displayed from the database.
@@ -302,7 +319,7 @@ class MenuIterable(Menu, Option):
                 await db(self.delete_sql, *args)
         return wrapper
 
-    async def get_options(self, ctx: commands.Context, force_regenerate: bool = False):
+    async def get_options(self, ctx: Context, force_regenerate: bool = False):
         """
         Get all of the options for an instance.
         This method has an open database instance in :code:`Context.database`.
@@ -313,7 +330,7 @@ class MenuIterable(Menu, Option):
             return self._options
 
         # Grab our data from the database
-        rows = await ctx.database(self.select_sql, *self.select_sql_args(ctx))
+        rows = await ctx.database(self.select_sql, *list(self.select_sql_args(ctx)))
         generated = []
 
         # Make buttons for deleting the data
@@ -322,7 +339,7 @@ class MenuIterable(Menu, Option):
                 display=self.row_text_display(ctx, i),
                 component_display=self.row_component_display(ctx, i),
                 callback=self.delete_database_call(i),
-                cache_callback=self.cache_delete_callback(*self.cache_delete_args(i))
+                cache_callback=self.cache_delete_callback(*list(self.cache_delete_args(i)))
             )
             v._button_style = discord.ui.ButtonStyle.danger
             generated.append(v)
