@@ -321,7 +321,8 @@ class OwnerOnly(vbu.Cog, command_attrs={'hidden': False, 'add_slash_command': Fa
         """
         Unloads and reloads a cog from the bot.
         """
-
+        if not cog_name:
+            raise vbu.errors.MissingRequiredArgumentString("cog_name")
         # Get a list of cogs to reload
         cog_name = '_'.join([i for i in cog_name])
         if cog_name == '*':
