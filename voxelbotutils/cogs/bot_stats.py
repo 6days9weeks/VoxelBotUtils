@@ -1,5 +1,6 @@
 from importlib import metadata
 import sys
+import typing
 
 import discord
 from discord.ext import commands
@@ -12,6 +13,7 @@ class BotStats(vbu.Cog):
     @vbu.command(
         application_command_meta=commands.ApplicationCommandMeta(),
     )
+    @commands.defer()
     @vbu.checks.is_config_set('bot_info', 'enabled')
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def info(self, ctx: vbu.Context):
@@ -55,8 +57,13 @@ class BotStats(vbu.Cog):
             )
         components = discord.ui.MessageComponents.add_buttons_with_rows(*buttons)
 
+        # See if we want to include stats
+        embeds = [info_embed]
+        if bot_info.get("include_stats"):
+            embeds.append(await self.get_stats_embed())
+
         # And send
-        return await ctx.send(embed=info_embed, components=components)
+        return await ctx.send(embeds=embeds, components=components)
 
     def get_invite_link(self):
         """
@@ -100,7 +107,7 @@ class BotStats(vbu.Cog):
             return await ctx.send("Despite being enabled, the vote command has no vote links to provide :/")
         return await ctx.send("\n".join(output_strings))
 
-    async def get_stats_embed(self):
+    async def get_stats_embed(self) -> typing.Union[discord.Embed, vbu.Embed]:
         """
         Get the stats embed - now as a function so I can use it in multiple places.
         """
@@ -128,15 +135,17 @@ class BotStats(vbu.Cog):
         ))
 
         # Add guild count
-        if self.bot.shard_count != len((self.bot.shard_ids or [0])):
-            embed.add_field(
-                "Approximate Guild Count",
-                f"{int((len(self.bot.guilds) / len(self.bot.shard_ids or [0])) * self.bot.shard_count):,}",
-            )
-        else:
-            embed.add_field("Guild Count", f"{len(self.bot.guilds):,}")
-        embed.add_field("Shard Count", f"{self.bot.shard_count or 1:,}")
-        embed.add_field("Average WS Latency", f"{(self.bot.latency * 1000):.2f}ms")
+        if self.bot.guilds:
+            if self.bot.shard_count != len((self.bot.shard_ids or [0])):
+                embed.add_field(
+                    "Approximate Guild Count",
+                    f"{int((len(self.bot.guilds) / len(self.bot.shard_ids or [0])) * self.bot.shard_count):,}",
+                )
+            else:
+                embed.add_field("Guild Count", f"{len(self.bot.guilds):,}")
+        if self.bot.latency >= 0:
+            embed.add_field("Shard Count", f"{self.bot.shard_count or 1:,}")
+            embed.add_field("Average WS Latency", f"{(self.bot.latency * 1000):.2f}ms")
 
         # Get topgg data
         if self.bot.config.get('bot_listing_api_keys', {}).get("topgg_token"):
@@ -185,7 +194,7 @@ class BotStats(vbu.Cog):
 
         return embed
 
-    @vbu.command(aliases=['status', 'botinfo'], add_slash_command=False)
+    @vbu.command(aliases=['status', 'botinfo'])
     @commands.bot_has_permissions(send_messages=True, embed_links=True)
     async def stats(self, ctx: vbu.Context):
         """
