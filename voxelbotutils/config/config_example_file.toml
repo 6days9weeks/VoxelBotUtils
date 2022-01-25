@@ -1,4 +1,5 @@
 token = "bot_token"  # The token for the bot.
+is_base64 = false # If the bot token is base64 encoded.
 pubkey = "bot_interaction_pubkey"  # The HTTP interactions pubkey for your bot.
 owners = []  # List of owner IDs - these people override all permission checks.
 dm_uncaught_errors = true  # Whether or not to DM the owners when unhandled errors are encountered.
