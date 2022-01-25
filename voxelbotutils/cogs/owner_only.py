@@ -27,7 +27,7 @@ def is_sudo_enabled():
 
 
 async def timed_unsu(user_id: int, bot: vbu.Bot):
-    await asyncio.sleep(delay=bot.config["sudo_timeout"])
+    await asyncio.sleep(delay=bot.config.get("sudo_timeout", 15 * 60))
     bot._elevated_owner_ids -= {user_id}
     bot._owner_sudo_tasks.pop(user_id, None)
 
