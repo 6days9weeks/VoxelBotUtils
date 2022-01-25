@@ -591,6 +591,37 @@ class Bot(MinimalBot):
         )
         return self._upgrade_chat
 
+    async def is_owner(self, user: discord.User) -> bool:
+        """|coro|
+
+        Checks if a :class:`~discord.User` or :class:`~discord.Member` is the owner of
+        this bot.
+
+        If an :attr:`owner_id` is not set, it is fetched automatically
+        through the use of :meth:`~.Bot.application_info`.
+
+        Parameters
+        -----------
+        user: :class:`.abc.User`
+            The user to check for.
+
+        Returns
+        --------
+        :class:`bool`
+            Whether the user is the owner.
+        """
+
+        if self.owner_ids:
+            return user.id in self.owner_ids
+        elif self._sudo_ctx_var is None:
+            app = await self.application_info()  # type: ignore
+            if app.team:
+                self.owner_ids = ids = {m.id for m in app.team.members}
+                return user.id in ids
+            else:
+                self.owner_id = owner_id = app.owner.id
+                return user.id == owner_id
+    
     async def get_user_topgg_vote(self, user_id: int) -> bool:
         """
         Returns whether or not the user has voted on Top.gg. If there's no Top.gg token
