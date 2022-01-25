@@ -1,9 +1,9 @@
 from __future__ import annotations
 
-import logging
-import typing
 import asyncio
 import json
+import logging
+import typing
 
 import aioredis
 import aioredlock
@@ -52,10 +52,12 @@ class RedisConnection(object):
 
         cls.config = config.copy()
         modified_config = config.copy()
-        modified_config.pop('shard_manager_enabled', False)  # No longer present, here from old configs
-        if modified_config.pop('enabled', True) is False:
+        modified_config.pop(
+            "shard_manager_enabled", False
+        )  # No longer present, here from old configs
+        if modified_config.pop("enabled", True) is False:
             raise NotImplementedError("The Redis connection has been disabled.")
-        address = modified_config.pop('host'), modified_config.pop('port')
+        address = modified_config.pop("host"), modified_config.pop("port")
         cls.pool = await aioredis.create_redis_pool(address, **modified_config)
         cls.lock_manager = aioredlock.Aioredlock([cls.pool])
         cls.enabled = True
@@ -214,12 +216,18 @@ class RedisChannelHandler(object):
 
         # Get the channel from the list, loop it forever
         channel = channel_list[0]
-        self.connection.logger.info(f"Looping to wait for messages to Redis channel {self.channel_name}")
-        while (await channel.wait_message()):
+        self.connection.logger.info(
+            f"Looping to wait for messages to Redis channel {self.channel_name}"
+        )
+        while await channel.wait_message():
             data = await channel.get_json()
-            self.connection.logger.debug(f"Received JSON at channel {self.channel_name}:{json.dumps(data)}")
+            self.connection.logger.debug(
+                f"Received JSON at channel {self.channel_name}:{json.dumps(data)}"
+            )
             try:
-                if asyncio.iscoroutine(self.callback) or asyncio.iscoroutinefunction(self.callback):
+                if asyncio.iscoroutine(self.callback) or asyncio.iscoroutinefunction(
+                    self.callback
+                ):
                     asyncio.create_task(self.callback(self.cog, data))
                 else:
                     self.callback(self.cog, data)
@@ -238,4 +246,5 @@ class RedisChannelHandler(object):
 def redis_channel_handler(channel_name):
     def wrapper(func):
         return RedisChannelHandler(channel_name, func)
+
     return wrapper

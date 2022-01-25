@@ -6,20 +6,19 @@ from discord.ext import commands
 from . import utils as vbu
 
 
-class InteractionHandler(vbu.Cog, command_attrs={'hidden': False, 'add_slash_command': False}):
-
+class InteractionHandler(vbu.Cog, command_attrs={"hidden": False, "add_slash_command": False}):
     @vbu.Cog.listener()
     async def on_component_interaction(self, interaction: discord.Interaction):
         if not interaction.component.custom_id.startswith("RUNCOMMAND"):
             return
-        command_name = interaction.component.custom_id[len("RUNCOMMAND "):]
+        command_name = interaction.component.custom_id[len("RUNCOMMAND ") :]
         command = self.bot.get_command(command_name)
         ctx = await self.bot.get_slash_context(interaction=interaction)
         ctx.invoked_with = command_name
         ctx.command = command
         await self.bot.invoke(ctx)
 
-    @vbu.command(aliases=['addslashcommands', 'addslashcommand', 'addapplicationcommand'])
+    @vbu.command(aliases=["addslashcommands", "addslashcommand", "addapplicationcommand"])
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True, add_reactions=True, attach_files=True)
     async def addapplicationcommands(self, ctx, guild_id: int = None, *commands: str):
@@ -37,7 +36,13 @@ class InteractionHandler(vbu.Cog, command_attrs={'hidden': False, 'add_slash_com
             output = f"Added **{len(added_commands)}** slash commands."
         await ctx.send(output, file=file)
 
-    @vbu.command(aliases=['removeslashcommands', 'removeslashcommand', 'removeapplicationcommand'])
+    @vbu.command(
+        aliases=[
+            "removeslashcommands",
+            "removeslashcommand",
+            "removeapplicationcommand",
+        ]
+    )
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True, add_reactions=True, attach_files=True)
     async def removeapplicationcommands(self, ctx, guild_id: int = None, *commands: str):

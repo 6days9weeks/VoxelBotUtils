@@ -25,7 +25,6 @@ if typing.TYPE_CHECKING:
 
 
 class _FakeConverter(object):
-
     def __init__(self, callback):
         self.callback = callback
 
@@ -39,12 +38,13 @@ class Converter(object):
     """
 
     def __init__(
-            self,
-            prompt: str,
-            checks: typing.List[Check] = None,
-            converter: AnyConverter = str,
-            components: discord.ui.MessageComponents = None,
-            timeout_message: str = None):
+        self,
+        prompt: str,
+        checks: typing.List[Check] = None,
+        converter: AnyConverter = str,
+        components: discord.ui.MessageComponents = None,
+        timeout_message: str = None,
+    ):
         """
         Args:
             prompt (str): The message that should be sent to the user when asking for the convertable.
@@ -97,17 +97,29 @@ class Converter(object):
 
         # The input will be an interaction - branch off here
         if self.components:
+
             def get_button_check(given_message):
                 def button_check(payload):
                     if payload.message.id != given_message.id:
                         return False
                     if payload.user.id == ctx.author.id:
                         return True
-                    ctx.bot.loop.create_task(payload.respond(f"Only {ctx.author.mention} can interact with these buttons.", ephemeral=True))
+                    ctx.bot.loop.create_task(
+                        payload.respond(
+                            f"Only {ctx.author.mention} can interact with these buttons.",
+                            ephemeral=True,
+                        )
+                    )
                     return False
+
                 return button_check
+
             try:
-                payload = await ctx.bot.wait_for("component_interaction", check=get_button_check(sent_message), timeout=60.0)
+                payload = await ctx.bot.wait_for(
+                    "component_interaction",
+                    check=get_button_check(sent_message),
+                    timeout=60.0,
+                )
                 await payload.response.defer_update()
             except asyncio.TimeoutError:
                 raise ConverterTimeout(self.timeout_message)
@@ -115,10 +127,13 @@ class Converter(object):
 
         # Loop until a valid input is received
         def check(message):
-            return all([
-                message.channel.id == ctx.channel.id,
-                message.author.id == ctx.author.id,
-            ])
+            return all(
+                [
+                    message.channel.id == ctx.channel.id,
+                    message.author.id == ctx.author.id,
+                ]
+            )
+
         while True:
 
             # Wait for an input

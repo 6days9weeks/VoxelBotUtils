@@ -1,6 +1,4 @@
-from . import runner
-from . import web
+from . import runner, web
 from .cogs.utils import *
-
 
 __version__ = "0.8.4a"

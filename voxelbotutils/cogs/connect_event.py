@@ -24,7 +24,6 @@ def try_username(bot):
 
 
 class ConnectEvent(vbu.Cog):
-
     async def send_webhook(self, event_name: str, text: str, username: str, logger: str) -> bool:
         """
         Send a webhook to the bot specified event webhook url.
@@ -35,7 +34,7 @@ class ConnectEvent(vbu.Cog):
             return False
         # I probably need to find a better way to do this but for now this works
         try:
-            thread_id = self.bot.config.get('event_webhook')['event_webhook_thread']
+            thread_id = self.bot.config.get("event_webhook")["event_webhook_thread"]
         except KeyError:
             thread_id = None
         try:

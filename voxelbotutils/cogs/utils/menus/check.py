@@ -39,8 +39,11 @@ class Check(object):
     failures = CheckFailureAction
 
     def __init__(
-            self, check: typing.Callable[[discord.Message], bool] = None, on_failure: CheckFailureAction = CheckFailureAction.FAIL,
-            fail_message: str = None):
+        self,
+        check: typing.Callable[[discord.Message], bool] = None,
+        on_failure: CheckFailureAction = CheckFailureAction.FAIL,
+        fail_message: str = None,
+    ):
         """
         Attributes:
             check (typing.Callable[[discord.Message], bool]): A method that takes a message instance, returning whether or not

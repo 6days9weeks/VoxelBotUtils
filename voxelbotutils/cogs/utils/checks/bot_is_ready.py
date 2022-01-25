@@ -18,7 +18,12 @@ def bot_is_ready():
     """
 
     async def predicate(ctx: commands.Context):
-        if ctx.bot.is_ready() and (ctx.bot.startup_method is None or ctx.bot.startup_method.done()):
+        if ctx.bot.is_ready() and (
+            ctx.bot.startup_method is None or ctx.bot.startup_method.done()
+        ):
             return True
-        raise BotNotReady("The bot isn't marked as ready to process commands yet - please wait a minute or so.")
+        raise BotNotReady(
+            "The bot isn't marked as ready to process commands yet - please wait a minute or so."
+        )
+
     return commands.check(predicate)
