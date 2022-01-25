@@ -845,7 +845,7 @@ class OwnerOnly(vbu.Cog, command_attrs={"hidden": False, "add_slash_command": Fa
         """
         ids = self.bot._elevated_owner_ids.union({ctx.author.id})
         self.bot._sudo_ctx_var.set(ids)
-        msg = copy(ctx.message)
+        msg = copy.copy(ctx.message)
         msg.content = ctx.prefix + command
         ctx.bot.dispatch("message", msg)
 
