@@ -863,7 +863,7 @@ class OwnerOnly(vbu.Cog, command_attrs={"hidden": False, "add_slash_command": Fa
                 self.bot._owner_sudo_tasks[ctx.author.id].cancel()
                 del self.bot._owner_sudo_tasks[ctx.author.id]
             self.bot._owner_sudo_tasks[ctx.author.id] = asyncio.create_task(
-                self.timed_unsu(ctx.author.id, self.bot)
+                timed_unsu(ctx.author.id, self.bot)
             )
             return
         await ctx.send("Your bot owner privileges are already enabled.")

@@ -234,7 +234,6 @@ class Bot(MinimalBot):
         case_insensitive: bool = True,
         intents: discord.Intents = None,
         allowed_mentions: discord.AllowedMentions = discord.AllowedMentions(everyone=False),
-        _sudo_ctx_var: typing.Optional[ContextVar] = None,
         *args,
         **kwargs,
     ):
@@ -257,6 +256,17 @@ class Bot(MinimalBot):
         self.config_file = config_file
         self.logger = logger or logging.getLogger("bot")
         self.reload_config()
+        self._sudo_ctx_var: typing.Optional[ContextVar] = None
+
+        if self.config.get("sudo_enabled", False) is True:
+            self._sudo_ctx_var = ContextVar("SudoOwners")
+
+        # These are IDs of ALL owners, whether they currently have elevated privileges or not
+        self._all_owner_ids: typing.FrozenSet[int] = frozenset()
+        # These are IDs of the owners, that currently have their privileges elevated globally.
+        # If sudo functionality is not enabled, this will remain empty throughout bot's lifetime.
+        self._elevated_owner_ids: typing.FrozenSet[int] = frozenset()
+        self._all_owner_ids = frozenset(self.config["owners"])
 
         # Let's work out our intents
         if not intents:
@@ -296,8 +306,6 @@ class Bot(MinimalBot):
             headers={"User-Agent": self.user_agent},
         )
 
-        self._sudo_ctx_var: typing.Optional[ContextVar] = None
-
         self._owner_sudo_tasks: typing.Dict[int, asyncio.Task] = {}
 
         # Allow database connections like this
@@ -328,16 +336,6 @@ class Bot(MinimalBot):
         logging.getLogger("discord.http").addHandler(handler)
         logging.getLogger("discord.webhook.async_").addHandler(handler)
         logging.getLogger("discord.webhook.sync").addHandler(handler)
-
-        if self.config.get("sudo_enabled", False) is True:
-            self._sudo_ctx_var = ContextVar("SudoOwners")
-
-        # These are IDs of ALL owners, whether they currently have elevated privileges or not
-        self._all_owner_ids: typing.FrozenSet[int] = frozenset()
-        # These are IDs of the owners, that currently have their privileges elevated globally.
-        # If sudo functionality is not enabled, this will remain empty throughout bot's lifetime.
-        self._elevated_owner_ids: typing.FrozenSet[int] = frozenset()
-        self._all_owner_ids = frozenset(self.config["owners"])
 
         # Here's the storage for cached stuff
         self.guild_settings = collections.defaultdict(
@@ -490,7 +488,7 @@ class Bot(MinimalBot):
         # this `if` is needed so that d.py's __init__ can "set" to `owner_ids` successfully
         if self._sudo_ctx_var is None and self._all_owner_ids is value:
             return  # type: ignore[misc]
-        raise AttributeError("can't set attribute")
+        # raise AttributeError("can't set attribute")
 
     def get_invite_link(
         self,
