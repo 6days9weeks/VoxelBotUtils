@@ -296,6 +296,8 @@ class Bot(MinimalBot):
             headers={"User-Agent": self.user_agent},
         )
 
+        self._sudo_ctx_var: typing.Optional[ContextVar] = None
+
         self._owner_sudo_tasks: typing.Dict[int, asyncio.Task] = {}
 
         # Allow database connections like this
