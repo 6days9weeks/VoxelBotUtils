@@ -611,16 +611,19 @@ class Bot(MinimalBot):
             Whether the user is the owner.
         """
 
-        if self.owner_ids:
-            return user.id in self.owner_ids
-        elif self._sudo_ctx_var is None:
-            app = await self.application_info()  # type: ignore
-            if app.team:
-                self.owner_ids = ids = {m.id for m in app.team.members}
-                return user.id in ids
+        if self.owner_id:
+            return user.id == self.owner_id
+        else:
+            if self._sudo_ctx_var is None:
+                app = await self.application_info()  # type: ignore
+                if app.team:
+                    self.owner_ids = ids = {m.id for m in app.team.members}
+                    return user.id in ids
+                else:
+                    self.owner_id = owner_id = app.owner.id
+                    return user.id == owner_id
             else:
-                self.owner_id = owner_id = app.owner.id
-                return user.id == owner_id
+                return user.id in self.owner_ids
     
     async def get_user_topgg_vote(self, user_id: int) -> bool:
         """
