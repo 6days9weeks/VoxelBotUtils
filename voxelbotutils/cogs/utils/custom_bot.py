@@ -234,6 +234,7 @@ class Bot(MinimalBot):
         case_insensitive: bool = True,
         intents: discord.Intents = None,
         allowed_mentions: discord.AllowedMentions = discord.AllowedMentions(everyone=False),
+        _sudo_ctx_var: typing.Optional[ContextVar] = None,
         *args,
         **kwargs,
     ):
@@ -326,7 +327,6 @@ class Bot(MinimalBot):
         logging.getLogger("discord.webhook.async_").addHandler(handler)
         logging.getLogger("discord.webhook.sync").addHandler(handler)
 
-        self._sudo_ctx_var: typing.Optional[ContextVar] = None
         if self.config.get("sudo_enabled", False) is True:
             self._sudo_ctx_var = ContextVar("SudoOwners")
 
