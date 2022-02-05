@@ -3,14 +3,8 @@ import pathlib
 import textwrap
 import typing
 
-from .runner import (
-    run_bot,
-    run_interactions,
-    run_modify_commands,
-    run_sharder,
-    run_shell,
-    run_website,
-)
+from .runner import (run_bot, run_interactions, run_modify_commands,
+                     run_sharder, run_shell, run_website)
 
 
 def get_path_relative_to_file(path: pathlib.Path) -> pathlib.Path:

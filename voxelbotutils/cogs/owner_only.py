@@ -368,7 +368,11 @@ class OwnerOnly(vbu.Cog, command_attrs={"hidden": False, "add_slash_command": Fa
 
     @blacklist.command(name="add")
     async def blacklist_add(
-        self, ctx: vbu.Context, user: typing.Union[discord.User, int], *, reason: str = "Blacklisted w/o reason." 
+        self,
+        ctx: vbu.Context,
+        user: typing.Union[discord.User, int],
+        *,
+        reason: str = "Blacklisted w/o reason.",
     ):
         """Add a user to the blacklist."""
         if isinstance(user, discord.User):

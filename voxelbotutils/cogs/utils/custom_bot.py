@@ -1058,9 +1058,7 @@ class Bot(MinimalBot):
         try:
             if not message.author.bot:
                 if self.blacklisted_users.get(int(message.author.id), None) is not None:
-                    self.logger.info(
-                        f"User {message.author} ({message.author.id}) is blacklisted"
-                    )
+                    self.logger.info(f"User {message.author} ({message.author.id}) is blacklisted")
                     return
                 ctx = await self.get_context(message)
                 await self.invoke(ctx)

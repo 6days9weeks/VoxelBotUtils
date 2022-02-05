@@ -11,7 +11,8 @@ from .context_embed import Embed
 from .custom_bot import Bot, MinimalBot
 from .custom_cog import Cog
 from .custom_command import Command, Group
-from .custom_context import AbstractMentionable, Context, PrintContext, SlashContext
+from .custom_context import (AbstractMentionable, Context, PrintContext,
+                             SlashContext)
 from .database import DatabaseTransaction, DatabaseWrapper
 from .embeddify import Embeddify
 from .help_command import HelpCommand
