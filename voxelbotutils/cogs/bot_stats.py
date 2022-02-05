@@ -106,7 +106,7 @@ class BotStats(vbu.Cog):
             return await ctx.send(
                 "Despite being enabled, the vote command has no vote links to provide :/"
             )
-        return await ctx.send("\n".join(output_strings))
+        return await vbu.embeddify(ctx, "\n".join(output_strings))
 
     async def get_stats_embed(self) -> typing.Union[discord.Embed, vbu.Embed]:
         """

@@ -11,7 +11,7 @@ class PingCommand(vbu.Cog):
         if isinstance(ctx, vbu.SlashContext):
             await ctx.interaction.response.send_message("Pong!")
         else:
-            await ctx.send("Pong!")
+            await vbu.embeddify(ctx, "Pong!")
 
 
 def setup(bot: vbu.Bot):

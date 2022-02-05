@@ -352,9 +352,9 @@ class OwnerOnly(vbu.Cog, command_attrs={"hidden": False, "add_slash_command": Fa
                     file=discord.File(io.StringIO(result), filename=f"ev.{filetype}"),
                 )
             except discord.HTTPException:
-                return await ctx.send("I don't have permission to attach files here.")
+                return await vbu.embeddify(ctx, "I don't have permission to attach files here.")
         else:
-            return await ctx.send(text)
+            return await vbu.embeddify(ctx, text)
 
     @vbu.group(aliases=["bl"])
     @commands.is_owner()
@@ -390,7 +390,7 @@ class OwnerOnly(vbu.Cog, command_attrs={"hidden": False, "add_slash_command": Fa
                 int(user),
                 reason,
             )
-        await ctx.send("User has been blacklisted.")
+        await vbu.embeddify(ctx, "User has been blacklisted.")
 
     @blacklist.command(name="remove")
     async def blacklist_remove(self, ctx: vbu.Context, user: typing.Union[discord.User, int]):
@@ -398,21 +398,21 @@ class OwnerOnly(vbu.Cog, command_attrs={"hidden": False, "add_slash_command": Fa
         if isinstance(user, discord.User):
             user = user.id
         if self.bot.blacklisted_users.get(int(user)) == None:
-            return await ctx.send("That user is not blacklisted.")
+            return await vbu.embeddify(ctx, "That user is not blacklisted.")
         self.bot.blacklisted_users.pop(int(user))
         async with vbu.Database() as db:
             await db("DELETE FROM blacklisted_users WHERE user_id = $1", int(user))
-        await ctx.send("User has been removed from the blacklist.")
+        await vbu.embeddify(ctx, "User has been removed from the blacklist.")
 
     @blacklist.command(name="list")
     async def blacklist_list(self, ctx: vbu.Context):
         """List all users on the blacklist."""
         if len(self.bot.blacklisted_users) == 0:
-            return await ctx.send("There are no blacklisted users.")
+            return await vbu.embeddify(ctx, "There are no blacklisted users.")
         msg = ""
         for user in self.bot.blacklisted_users:
-            msg += f"{self.bot.get_user(user)}: `{self.bot.blacklisted_users.get(user)}`\n"
-        await ctx.send(msg)
+            msg += f" - {self.bot.get_user(user)} ({user}): `{self.bot.blacklisted_users.get(user)}`\n"
+        await vbu.embeddify(ctx, msg)
 
     @vbu.command(aliases=["rld", "rl"])
     @commands.is_owner()
@@ -443,17 +443,19 @@ class OwnerOnly(vbu.Cog, command_attrs={"hidden": False, "add_slash_command": Fa
                     self.bot.reload_extension(cog)
                     reloaded_cogs.append(cog)
                 except Exception:
-                    await ctx.send(
-                        f"Error loading cog `{cog}`: ```py\n{traceback.format_exc()}```"
+                    await vbu.embeddify(
+                        ctx, f"Error loading cog `{cog}`: ```py\n{traceback.format_exc()}```"
                     )
             except Exception:
-                await ctx.send(f"Error loading cog `{cog}`: ```py\n{traceback.format_exc()}```")
+                await vbu.embeddify(
+                    ctx, f"Error loading cog `{cog}`: ```py\n{traceback.format_exc()}```"
+                )
 
         # Output which cogs have been reloaded
         if len(reloaded_cogs) == 1:
-            await ctx.send(f"Reloaded: `{reloaded_cogs[0]}`")
+            await vbu.embeddify(ctx, f"Reloaded: `{reloaded_cogs[0]}`")
         elif reloaded_cogs:
-            await ctx.send("Reloaded:\n`" + "`\n`".join(reloaded_cogs) + "`")
+            await vbu.embeddify(ctx, "Reloaded:\n`" + "`\n`".join(reloaded_cogs) + "`")
         return
 
     @vbu.command(aliases=["downloadcog", "dlcog", "download", "dl", "stealcog"])
@@ -481,12 +483,14 @@ class OwnerOnly(vbu.Cog, command_attrs={"hidden": False, "add_slash_command": Fa
             with open(file_path, "x", encoding="utf-8") as n:
                 n.write(text)
         except FileExistsError:
-            return await ctx.send("The file you tried to download was already downloaded.")
+            return await vbu.embeddify(
+                ctx, "The file you tried to download was already downloaded."
+            )
 
         # If it wasn't loaded into the cogs folder, we're probably fine
         if file_folder != "cogs":
-            return await ctx.send(
-                f"Downloaded the `{file_name}` file, and successfully saved as `{file_path}`."
+            return await vbu.embeddify(
+                ctx, f"Downloaded the `{file_name}` file, and successfully saved as `{file_path}`."
             )
 
         # Load the cog
@@ -495,22 +499,26 @@ class OwnerOnly(vbu.Cog, command_attrs={"hidden": False, "add_slash_command": Fa
             self.bot.load_extension(f"cogs.{file_name[:-3]}")
             errored = False
         except commands.ExtensionNotFound:
-            await ctx.send("Extension could not be found. Extension has been deleted.")
+            await vbu.embeddify(ctx, "Extension could not be found. Extension has been deleted.")
         except commands.ExtensionAlreadyLoaded:
-            await ctx.send(
-                "The extension you tried to download was already running. Extension has been deleted."
+            await vbu.embeddify(
+                ctx,
+                "The extension you tried to download was already running. Extension has been deleted.",
             )
         except commands.NoEntryPointError:
-            await ctx.send("No added setup function. Extension has been deleted.")
+            await vbu.embeddify(ctx, "No added setup function. Extension has been deleted.")
         except commands.ExtensionFailed:
-            await ctx.send("Extension failed for some unknown reason. Extension has been deleted.")
+            await vbu.embeddify(
+                ctx, "Extension failed for some unknown reason. Extension has been deleted."
+            )
         if errored:
             os.remove(file_path)
             return
 
         # And done
-        await ctx.send(
-            f"Downloaded the `{file_name}` cog, saved as `{file_path}`, and loaded successfully into the bot."
+        await vbu.embeddify(
+            ctx,
+            f"Downloaded the `{file_name}` cog, saved as `{file_path}`, and loaded successfully into the bot.",
         )
 
     @vbu.command()
@@ -535,7 +543,7 @@ class OwnerOnly(vbu.Cog, command_attrs={"hidden": False, "add_slash_command": Fa
                 )
             )
         if not rows:
-            return await ctx.send("No content.")
+            return await vbu.embeddify(ctx, "No content.")
         end_time = time.perf_counter()
 
         # Set up some metadata for us to format things nicely
@@ -596,9 +604,9 @@ class OwnerOnly(vbu.Cog, command_attrs={"hidden": False, "add_slash_command": Fa
         """
 
         if len(username) > 32:
-            return await ctx.send("That username is too long.")
+            return await vbu.embeddify(ctx, "That username is too long.")
         await self.bot.user.edit(username=username)
-        await ctx.send("Done.")
+        await vbu.embeddify(ctx, "Done.")
 
     @botuser.command(name="avatar", aliases=["photo", "image", "picture"])
     @commands.is_owner()
@@ -612,12 +620,12 @@ class OwnerOnly(vbu.Cog, command_attrs={"hidden": False, "add_slash_command": Fa
             try:
                 image_url = ctx.message.attachments[0].url
             except IndexError:
-                return await ctx.send("You need to provide an image.")
+                return vbu.embeddify(ctx, "You need to provide an image.")
 
         async with self.bot.session.get(image_url) as r:
             image_content = await r.read()
         await self.bot.user.edit(avatar=image_content)
-        await ctx.send("Done.")
+        await vbu.embeddify(ctx, "Done.")
 
     @botuser.command(name="activity", aliases=["game"])
     @commands.is_owner()
@@ -793,7 +801,7 @@ class OwnerOnly(vbu.Cog, command_attrs={"hidden": False, "add_slash_command": Fa
 
         # Make sure we have some data
         if not insert_statements:
-            return await ctx.send("This guild has no non-default settings.")
+            return await vbu.embeddify(ctx, "This guild has no non-default settings.")
 
         # Time to make a script
         file_content = """
