@@ -1056,10 +1056,12 @@ class Bot(MinimalBot):
             token = self._sudo_ctx_var.set(self.owner_ids)
 
         try:
-            if (
-                not message.author.bot
-                and self.blacklisted_users.get(int(message.author.id)) != None
-            ):
+            if not message.author.bot:
+                if self.blacklisted_users.get(int(message.author.id), None) is not None:
+                    self.logger.info(
+                        f"User {message.author} ({message.author.id}) is blacklisted"
+                    )
+                    return
                 ctx = await self.get_context(message)
                 await self.invoke(ctx)
             else:
