@@ -16,6 +16,8 @@ class InteractionHandler(vbu.Cog, command_attrs={"hidden": False, "add_slash_com
         ctx = await self.bot.get_slash_context(interaction=interaction)
         ctx.invoked_with = command_name
         ctx.command = command
+        if self.bot.blacklisted_users.get(int(interaction.user.id), None) is not None:
+            return
         await self.bot.invoke(ctx)
 
     @vbu.command(aliases=["addslashcommands", "addslashcommand", "addapplicationcommand"])

@@ -1043,6 +1043,27 @@ class Bot(MinimalBot):
         await self.set_default_presence()
         self.logger.info("Bot loaded.")
 
+    async def process_slash_commands(self, interaction: discord.Interaction) -> None:
+        """|coro|
+        This function processes the commands that have been registered
+        to the bot and other groups. Without this coroutine, none of the
+        slash commands will be triggered.
+        By default, this coroutine is called inside the :func:`.on_slash_command`
+        event. If you choose to override the :func:`.on_slash_command` event, then
+        you should invoke this coroutine as well.
+        This is built using other low level tools, and is equivalent to a
+        call to :meth:`~.Bot.get_slash_context` followed by a call to :meth:`~.Bot.invoke`.
+        Parameters
+        -----------
+        interaction: :class:`discord.Interaction`
+            The message to process commands for.
+        """
+        ctx = await self.get_slash_context(interaction)
+        if self.blacklisted_users.get(int(ctx.author.id), None) is not None:
+            self.logger.info(f"User {ctx.author} ({ctx.author.id}) is blacklisted")
+            return
+        await self.invoke(ctx)
+
     async def process_commands(self, message: discord.Message):
         """
         Same as base method, but dispatches an additional event for cogs
