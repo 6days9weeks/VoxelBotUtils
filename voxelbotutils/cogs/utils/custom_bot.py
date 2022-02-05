@@ -1061,6 +1061,7 @@ class Bot(MinimalBot):
         ctx = await self.get_slash_context(interaction)
         if self.blacklisted_users.get(int(ctx.author.id), None) is not None:
             self.logger.info(f"User {ctx.author} ({ctx.author.id}) is blacklisted")
+            await ctx.interaction.response.send_message("You are blacklisted from using this bot.", ephemeral=True)
             return
         await self.invoke(ctx)
 

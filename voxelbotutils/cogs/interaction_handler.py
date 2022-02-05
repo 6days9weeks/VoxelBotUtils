@@ -17,6 +17,7 @@ class InteractionHandler(vbu.Cog, command_attrs={"hidden": False, "add_slash_com
         ctx.invoked_with = command_name
         ctx.command = command
         if self.bot.blacklisted_users.get(int(interaction.user.id), None) is not None:
+            await ctx.interaction.response.send_message("You are blacklisted from using this bot.", ephemeral=True)
             return
         await self.bot.invoke(ctx)
 
