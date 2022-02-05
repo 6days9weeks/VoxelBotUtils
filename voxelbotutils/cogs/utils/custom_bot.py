@@ -298,6 +298,7 @@ class Bot(MinimalBot):
             ],
         }
         self.DEFAULT_USER_SETTINGS = {}
+        self.DEFAULT_BLACKLISTED_USERS = {}
 
         # Aiohttp session
         self.session: aiohttp.ClientSession = AnalyticsClientSession(
@@ -343,6 +344,9 @@ class Bot(MinimalBot):
         )
         self.user_settings = collections.defaultdict(
             lambda: copy.deepcopy(self.DEFAULT_USER_SETTINGS)
+        )
+        self.blacklisted_users = collections.defaultdict(
+            lambda: copy.deepcopy(self.DEFAULT_BLACKLISTED_USERS)
         )
 
     async def startup(self):
@@ -398,6 +402,10 @@ class Bot(MinimalBot):
         for row in data:
             for key, value in row.items():
                 self.user_settings[row["user_id"]][key] = value
+        # Get default blacklisted users
+        default_blacklisted_users = await db("SELECT * FROM blacklisted_users")
+        for row in default_blacklisted_users:
+            self.blacklisted_users[int(row["user_id"])] = row["reason"]
 
         # Run the user-added startup methods
         async def fake_cache_setup_method(db):
@@ -624,7 +632,7 @@ class Bot(MinimalBot):
                     return user.id == owner_id
             else:
                 return user.id in self.owner_ids
-    
+
     async def get_user_topgg_vote(self, user_id: int) -> bool:
         """
         Returns whether or not the user has voted on Top.gg. If there's no Top.gg token
@@ -1048,7 +1056,10 @@ class Bot(MinimalBot):
             token = self._sudo_ctx_var.set(self.owner_ids)
 
         try:
-            if not message.author.bot:
+            if (
+                not message.author.bot
+                and self.blacklisted_users.get(int(message.author.id)) != None
+            ):
                 ctx = await self.get_context(message)
                 await self.invoke(ctx)
             else:

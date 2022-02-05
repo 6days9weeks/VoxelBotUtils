@@ -356,6 +356,60 @@ class OwnerOnly(vbu.Cog, command_attrs={"hidden": False, "add_slash_command": Fa
         else:
             return await ctx.send(text)
 
+    @vbu.group(aliases=["bl"])
+    @commands.is_owner()
+    async def blacklist(self, ctx: vbu.Context):
+        """
+        Manages the user blacklist.
+        """
+
+        if ctx.invoked_subcommand is None:
+            await ctx.send_help(ctx.command)
+
+    @blacklist.command(name="add")
+    async def blacklist_add(
+        self, ctx: vbu.Context, user: typing.Union[discord.User, int], *, reason: str = None
+    ):
+        """Add a user to the blacklist."""
+        if isinstance(user, discord.User):
+            user = user.id
+        if self.bot.blacklisted_users.get(int(user)) != None:
+            return await ctx.send(
+                "That user is already blacklisted for: `{}`".format(
+                    self.bot.blacklisted_users.get(int(user))
+                )
+            )
+        self.bot.blacklisted_users[int(user)] = reason
+        async with vbu.Database() as db:
+            await db(
+                "INSERT INTO blacklisted_users (user_id, reason) VALUES ($1, $2)",
+                int(user),
+                reason,
+            )
+        await ctx.send("User has been blacklisted.")
+
+    @blacklist.command(name="remove")
+    async def blacklist_remove(self, ctx: vbu.Context, user: typing.Union[discord.User, int]):
+        """Remove a user from the blacklist."""
+        if isinstance(user, discord.User):
+            user = user.id
+        if self.bot.blacklisted_users.get(int(user)) == None:
+            return await ctx.send("That user is not blacklisted.")
+        self.bot.blacklisted_users.pop(int(user))
+        async with vbu.Database() as db:
+            await db("DELETE FROM blacklisted_users WHERE user_id = $1", int(user))
+        await ctx.send("User has been removed from the blacklist.")
+
+    @blacklist.command(name="list")
+    async def blacklist_list(self, ctx: vbu.Context):
+        """List all users on the blacklist."""
+        if len(self.bot.blacklisted_users) == 0:
+            return await ctx.send("There are no blacklisted users.")
+        msg = ""
+        for user in self.bot.blacklisted_users:
+            msg += f"{self.bot.get_user(user)}: `{self.bot.blacklisted_users.get(user)}`\n"
+        await ctx.send(msg)
+
     @vbu.command(aliases=["rld", "rl"])
     @commands.is_owner()
     @commands.bot_has_permissions(send_messages=True)
