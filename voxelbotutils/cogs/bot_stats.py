@@ -3,6 +3,7 @@ import sys
 import typing
 
 import discord
+import psutil
 from discord.ext import commands
 
 from . import utils as vbu
@@ -133,6 +134,12 @@ class BotStats(vbu.Cog):
             f"[Novus]({novus_meta['Home-page']}) `{novus_meta['Version']}`\n"
             f"[VoxelBotUtils](https://github.com/6days9weeks/VoxelBotUtils/tree/siesta) `{vbu_meta['Version']}`\n"
         ))
+        
+        # Add memory n cpu usage
+        mem_usage = psutil.Process().memory_full_info().uss / 1024 ** 2
+        cpu_usage = psutil.cpu_percent()
+
+        embed.add_field(name="Process", value=f"{mem_usage:.2f} MiB\n{cpu_usage:.2f}% CPU")
 
         # Add guild count
         if self.bot.guilds:
