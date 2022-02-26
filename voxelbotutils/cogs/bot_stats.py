@@ -138,7 +138,6 @@ class BotStats(vbu.Cog):
         # Add memory n cpu usage
         mem_usage = psutil.Process().memory_full_info().uss / 1024 ** 2
         cpu_usage = psutil.cpu_percent()
-
         embed.add_field(name="Process", value=f"{mem_usage:.2f} MiB\n{cpu_usage:.2f}% CPU")
 
         # Add guild count
