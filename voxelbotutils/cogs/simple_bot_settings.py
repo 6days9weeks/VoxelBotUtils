@@ -5,20 +5,22 @@ from . import utils as vbu
 
 
 class BotSettings(vbu.Cog):
-
     @vbu.command(add_slash_command=False)
     @commands.bot_has_permissions(send_messages=True)
     @commands.guild_only()
-    @vbu.checks.is_config_set('database', 'enabled')
+    @vbu.checks.is_config_set("database", "enabled")
     async def prefix(self, ctx: vbu.Context, *, new_prefix: str = None):
         """
         Changes the prefix that the bot uses.
         """
 
         # See if the prefix was actually specified
-        prefix_column = self.bot.config.get('guild_settings_prefix_column', 'prefix')
+        prefix_column = self.bot.config.get("guild_settings_prefix_column", "prefix")
         if new_prefix is None:
-            current_prefix = self.bot.guild_settings[ctx.guild.id][prefix_column] or self.bot.config['default_prefix']
+            current_prefix = (
+                self.bot.guild_settings[ctx.guild.id][prefix_column]
+                or self.bot.config["default_prefix"]
+            )
             return await ctx.send(
                 f"The current prefix is `{current_prefix}`.",
                 allowed_mentions=discord.AllowedMentions.none(),
@@ -28,19 +30,24 @@ class BotSettings(vbu.Cog):
         try:
             await commands.has_guild_permissions(manage_guild=True).predicate(ctx)
         except Exception:
-            return await ctx.send("You do not have permission to change the command prefix.")
+            return await vbu.embeddify(
+                ctx, "You do not have permission to change the command prefix."
+            )
 
         # Validate prefix
         if len(new_prefix) > 30:
-            return await ctx.send("The maximum length a prefix can be is 30 characters.")
+            return await vbu.embeddify(ctx, "The maximum length a prefix can be is 30 characters.")
 
         # Store setting
         self.bot.guild_settings[ctx.guild.id][prefix_column] = new_prefix
         async with self.bot.database() as db:
             await db(
                 """INSERT INTO guild_settings (guild_id, {prefix_column}) VALUES ($1, $2)
-                ON CONFLICT (guild_id) DO UPDATE SET {prefix_column}=excluded.prefix""".format(prefix_column=prefix_column),
-                ctx.guild.id, new_prefix
+                ON CONFLICT (guild_id) DO UPDATE SET {prefix_column}=excluded.prefix""".format(
+                    prefix_column=prefix_column
+                ),
+                ctx.guild.id,
+                new_prefix,
             )
         await ctx.send(
             f"My prefix has been updated to `{new_prefix}`.",

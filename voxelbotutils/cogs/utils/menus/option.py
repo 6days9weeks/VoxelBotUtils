@@ -15,7 +15,7 @@ if typing.TYPE_CHECKING:
     from ..custom_context import SlashContext
 
 
-T = typing.TypeVar('T')
+T = typing.TypeVar("T")
 Awai = typing.Awaitable[typing.Callable[..., T]]
 Coro = typing.Coroutine[typing.Any, typing.Any, T]
 MaybeCoro = typing.Union[T, Coro[T], Awai[T]]

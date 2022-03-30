@@ -2,7 +2,6 @@ from discord.ext import commands
 
 
 class MenuDisplayable(object):
-
     async def get_display(self, ctx: commands.Context) -> str:
         """
         Get the display string for the given displayable.

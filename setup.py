@@ -1,6 +1,6 @@
 import re
-import setuptools
 
+import setuptools
 
 # Grab the readme
 try:
@@ -11,34 +11,37 @@ except Exception:
 
 
 # Steal some code from Novus to get the version
-version = ''
-with open('voxelbotutils/__init__.py') as f:
+version = ""
+with open("voxelbotutils/__init__.py") as f:
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
 
 
 # Make sure there's a version
 if not version:
-    raise RuntimeError('version is not set')
+    raise RuntimeError("version is not set")
 
 
 # Add a commit reference if we're installing an alpha version
-if version.endswith(('a', 'b', 'rc')):
+if version.endswith(("a", "b", "rc")):
     try:
         import subprocess
+
         p = subprocess.Popen(
-            ['git', 'rev-list', '--count', 'HEAD'],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            ["git", "rev-list", "--count", "HEAD"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
         )
         out, err = p.communicate()
         if out:
-            version += out.decode('utf-8').strip()
+            version += out.decode("utf-8").strip()
         p = subprocess.Popen(
-            ['git', 'rev-parse', '--short', 'HEAD'],
-            stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+            ["git", "rev-parse", "--short", "HEAD"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
         )
         out, err = p.communicate()
         if out:
-            version += '+g' + out.decode('utf-8').strip()
+            version += "+g" + out.decode("utf-8").strip()
     except Exception:
         pass
 
@@ -54,7 +57,6 @@ requirements = [
     "aiodogstatsd>=0.14.0,<0.15",
     "aiohttp",  # no versioning here because I trust u
     "upgradechatpy>=1.0.3<2.0",
-
     # Web requirements
     # No versioning on most simply because Pip
     # doesn't like installing very quickly if I keep it
@@ -78,7 +80,7 @@ extras = {
     ],
     "mysql": [
         "aiomysql",
-    ]
+    ],
 }
 
 
@@ -100,7 +102,7 @@ setuptools.setup(
         "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
         "Operating System :: OS Independent",
     ],
-    python_requires='>=3.8',
+    python_requires=">=3.8",
     install_requires=requirements,
     extras_require=extras,
     entry_points={
@@ -109,7 +111,5 @@ setuptools.setup(
             "vbu=voxelbotutils.__main__:main",
         ],
     },
-    package_data={
-        "voxelbotutils": ["config/*"]
-    },
+    package_data={"voxelbotutils": ["config/*"]},
 )

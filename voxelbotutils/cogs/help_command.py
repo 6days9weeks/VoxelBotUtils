@@ -4,7 +4,6 @@ from . import utils as vbu
 
 
 class Help(vbu.Cog):
-
     def __init__(self, bot: vbu.Bot):
         super().__init__(bot)
         self._original_help_command = bot.help_command

@@ -1,9 +1,8 @@
-import typing
 import collections
+import typing
 
 import discord
 from discord.ext import commands
-
 
 GuildT = typing.TypeVar("GuildT", None, discord.Guild, typing.Optional[discord.Guild])
 
@@ -38,7 +37,6 @@ class AbstractMentionable(discord.Object):
 
 
 class ContextMixin:
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.original_author_id: typing.Optional[int]
@@ -47,7 +45,9 @@ class ContextMixin:
         except AttributeError:
             self.original_author_id = None
 
-    def get_mentionable_channel(self, channel_id: int, fallback: str = "null") -> AbstractMentionable:
+    def get_mentionable_channel(
+        self, channel_id: int, fallback: str = "null"
+    ) -> AbstractMentionable:
         """
         Get the mention string for a given channel ID.
 
@@ -118,7 +118,6 @@ class SlashContext(commands.SlashContext, ContextMixin, typing.Generic[GuildT]):
 
 
 class _NoRequestTyping(object):
-
     async def __aenter__(self):
         pass
 
@@ -127,13 +126,11 @@ class _NoRequestTyping(object):
 
 
 class _FakeStateMessage(discord.Message):
-
     def __init__(self, state):
         self._state = state
 
 
 class PrintContext(Context):
-
     def __init__(self, bot):
         self.message = _FakeStateMessage(bot._connection)
         self.bot = bot
@@ -141,7 +138,7 @@ class PrintContext(Context):
 
     async def send(self, content, *args, **kwargs):
         print(content, args, kwargs)
-        if (file := kwargs.get("file", None)):
+        if file := kwargs.get("file", None):
             if isinstance(file.fp, str):
                 pass
             else:

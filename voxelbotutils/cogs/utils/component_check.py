@@ -1,19 +1,20 @@
 import asyncio
-from typing import Union, Callable, Optional
+from typing import Callable, Optional, Union
 
 import discord
 
 
 def component_check(
-        user: Union[discord.User, discord.Member], 
-        message: discord.Message, 
-        no_interact_message: Optional[str] = discord.utils.MISSING) -> Callable[[discord.Interaction], bool]:
+    user: Union[discord.User, discord.Member],
+    message: discord.Message,
+    no_interact_message: Optional[str] = discord.utils.MISSING,
+) -> Callable[[discord.Interaction], bool]:
     """
     A check for a wait_for that allows only a user to interact with the given
     button, outputting the no interaction message.
-    
+
     .. versionadded:: 0.6.6
-    
+
     Parameters
     ----------
     user : Union[discord.User, discord.Member]
@@ -27,7 +28,7 @@ def component_check(
 
         You can now disable a response being sent by passing ``None`` to this parameter. If you do, a deferred
         update will still be sent.
-    
+
     Returns
     -------
     Callable[[discord.Interaction], bool]
@@ -45,13 +46,16 @@ def component_check(
         if payload.user.id != user.id:
             loop = asyncio.get_event_loop()
             if no_interact_message:
-                loop.create_task(payload.response.send_message(
-                    no_interact_message, 
-                    ephemeral=True, 
-                    allowed_mentions=discord.AllowedMentions.none(),
-                ))
+                loop.create_task(
+                    payload.response.send_message(
+                        no_interact_message,
+                        ephemeral=True,
+                        allowed_mentions=discord.AllowedMentions.none(),
+                    )
+                )
             else:
                 loop.create_task(payload.response.defer_update())
             return False
         return True
+
     return check

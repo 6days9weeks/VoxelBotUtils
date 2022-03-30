@@ -1,25 +1,26 @@
-import re as _re
 import gettext as _gettext
+import re as _re
 import typing as _typing
 
 import discord as _discord
 from discord.ext import commands as _dpy_commands
 
 from . import checks, converters, errors, menus
+from .component_check import component_check
 from .context_embed import Embed
-from .custom_bot import MinimalBot, Bot
+from .custom_bot import Bot, MinimalBot
 from .custom_cog import Cog
 from .custom_command import Command, Group
-from .custom_context import Context, AbstractMentionable, PrintContext, SlashContext
-from .database import DatabaseWrapper, DatabaseTransaction
-from .redis import RedisConnection, RedisChannelHandler, redis_channel_handler
-from .statsd import StatsdConnection
-from .time_value import TimeValue
-from .paginator import Paginator
-from .help_command import HelpCommand
-from .string import Formatter
-from .component_check import component_check
+from .custom_context import (AbstractMentionable, Context, PrintContext,
+                             SlashContext)
+from .database import DatabaseTransaction, DatabaseWrapper
 from .embeddify import Embeddify
+from .help_command import HelpCommand
+from .paginator import Paginator
+from .redis import RedisChannelHandler, RedisConnection, redis_channel_handler
+from .statsd import StatsdConnection
+from .string import Formatter
+from .time_value import TimeValue
 from .twitch_stream import TwitchStream
 
 
@@ -28,8 +29,8 @@ def command(*args, **kwargs):
 
 
 def group(*args, **kwargs):
-    if 'case_insensitive' not in kwargs:
-        kwargs['case_insensitive'] = True
+    if "case_insensitive" not in kwargs:
+        kwargs["case_insensitive"] = True
     return _dpy_commands.group(*args, cls=Group, **kwargs)
 
 
@@ -41,10 +42,8 @@ def minify_html(text: str) -> str:
 
 
 def translation(
-        ctx: _typing.Union[_dpy_commands.Context, _discord.Interaction, str],
-        domain: str,
-        **kwargs
-        ) -> _typing.Union[_gettext.GNUTranslations, _gettext.NullTranslations]:
+    ctx: _typing.Union[_dpy_commands.Context, _discord.Interaction, str], domain: str, **kwargs
+) -> _typing.Union[_gettext.GNUTranslations, _gettext.NullTranslations]:
     """
     Get a translation table for a given domain with the locale
     stored in a context.

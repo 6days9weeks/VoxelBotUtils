@@ -25,7 +25,6 @@ if typing.TYPE_CHECKING:
 
 
 class _FakeConverter(object):
-
     def __init__(self, callback):
         self.callback = callback
 
@@ -39,12 +38,13 @@ class Converter(object):
     """
 
     def __init__(
-            self,
-            prompt: str,
-            checks: typing.List[Check] = None,
-            converter: AnyConverter = str,
-            components: discord.ui.MessageComponents = None,
-            timeout_message: str = None):
+        self,
+        prompt: str,
+        checks: typing.List[Check] = None,
+        converter: AnyConverter = str,
+        components: discord.ui.MessageComponents = None,
+        timeout_message: str = None,
+    ):
         """
         Args:
             prompt (str): The message that should be sent to the user when asking for the convertable.
@@ -112,6 +112,7 @@ class Converter(object):
                         ephemeral=True,
                     ))
                     return False
+
                 return button_check
 
             # Wait for the user to click a button

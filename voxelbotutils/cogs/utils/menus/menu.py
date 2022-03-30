@@ -1,20 +1,20 @@
 from __future__ import annotations
 
 import asyncio
-import typing
 import inspect
+import typing
 
 import discord
 from discord.ext import commands
 
-from .errors import ConverterTimeout
-from .option import Option
-from .mixins import MenuDisplayable
-from .callbacks import MenuCallbacks
-from .converter import Converter
+from ..custom_bot import Bot
 from ..custom_cog import Cog
 from ..custom_command import Command
-from ..custom_bot import Bot
+from .callbacks import MenuCallbacks
+from .converter import Converter
+from .errors import ConverterTimeout
+from .mixins import MenuDisplayable
+from .option import Option
 
 if typing.TYPE_CHECKING:
     from ..custom_context import Context, SlashContext
@@ -37,11 +37,14 @@ def _do_nothing(return_value=None) -> typing.Callable[[], None]:
     ...
 
 
-def _do_nothing(return_value: typing.Optional[typing.Type[T]] = None) -> typing.Callable[[], typing.Optional[T]]:
+def _do_nothing(
+    return_value: typing.Optional[typing.Type[T]] = None,
+) -> typing.Callable[[], typing.Optional[T]]:
     def wrapper(*args, **kwargs) -> typing.Optional[T]:
         if return_value:
             return return_value()
         return return_value
+
     return wrapper
 
 
@@ -53,11 +56,11 @@ class Menu(MenuDisplayable):
     callbacks = MenuCallbacks
 
     def __init__(
-            self,
-            *options: Option,
-            display: str = None,
-            component_display: str = None,
-            ):
+        self,
+        *options: Option,
+        display: str = None,
+        component_display: str = None,
+    ):
         """
         Args:
             options (typing.List[Option]): A list of options that should be displayed in the menu.
@@ -145,7 +148,6 @@ class Menu(MenuDisplayable):
         meta = commands.ApplicationCommandMeta(guild_only=guild_only)
 
         class NestedCog(Cog, name=cog_name):
-
             def __init__(nested_self, bot):
                 super().__init__(bot)
                 if guild_only:
@@ -243,6 +245,7 @@ class Menu(MenuDisplayable):
                     ephemeral=True,
                 ))
                 return False
+
             return button_check
 
         # Keep looping while we're expecting a user input
@@ -323,20 +326,28 @@ class Menu(MenuDisplayable):
                 output = await i.get_display(ctx)
                 if output:
                     output_strings.append(f"\N{BULLET} {output}")
-                style = (discord.ui.ButtonStyle.secondary if isinstance(i._callback, Menu) else None) or i._button_style or discord.ui.ButtonStyle.primary
-                buttons.append(discord.ui.Button(
-                    label=i.component_display,
-                    custom_id=i._component_custom_id,
-                    style=style,
-                ))
+                style = (
+                    (discord.ui.ButtonStyle.secondary if isinstance(i._callback, Menu) else None)
+                    or i._button_style
+                    or discord.ui.ButtonStyle.primary
+                )
+                buttons.append(
+                    discord.ui.Button(
+                        label=i.component_display,
+                        custom_id=i._component_custom_id,
+                        style=style,
+                    )
+                )
         ctx.database = None
 
         # Add a done button
-        buttons.append(discord.ui.Button(label="Done", custom_id="Done", style=discord.ui.ButtonStyle.success))
+        buttons.append(
+            discord.ui.Button(label="Done", custom_id="Done", style=discord.ui.ButtonStyle.success)
+        )
 
         # Output
         components = discord.ui.MessageComponents.add_buttons_with_rows(*buttons)
-        embed = discord.Embed(colour=0xffffff)
+        embed = discord.Embed(colour=0xFFFFFF)
         embed.description = "\n".join(output_strings) or "No options added."
         return {
             "embed": embed,
@@ -352,21 +363,29 @@ class MenuIterable(Menu, Option):
     allow_none = False
 
     def __init__(
-            self,
-            *,
-            select_sql: str,
-            insert_sql: str,
-            delete_sql: str,
-            row_text_display: typing.Callable[[Context, dict], str],
-            row_component_display: typing.Callable[[Context, dict], str],
-            converters: typing.List[Converter],
-            select_sql_args: typing.Callable[[Context], typing.Iterable[typing.Any]] = None,
-            insert_sql_args: typing.Callable[[Context, typing.List[typing.Any]], typing.Iterable[typing.Any]] = None,
-            delete_sql_args: typing.Callable[[Context, dict], typing.Iterable[typing.Any]] = None,
-            cache_callback: typing.Optional[typing.Callable[[Context, typing.List[typing.Any]], None]] = None,
-            cache_delete_callback: typing.Optional[typing.Callable[[Context, typing.List[typing.Any]], None]] = None,
-            cache_delete_args: typing.Optional[typing.Callable[[dict], typing.Iterable[typing.Any]]] = None,
-            ):
+        self,
+        *,
+        select_sql: str,
+        insert_sql: str,
+        delete_sql: str,
+        row_text_display: typing.Callable[[Context, dict], str],
+        row_component_display: typing.Callable[[Context, dict], str],
+        converters: typing.List[Converter],
+        select_sql_args: typing.Callable[[Context], typing.Iterable[typing.Any]] = None,
+        insert_sql_args: typing.Callable[
+            [Context, typing.List[typing.Any]], typing.Iterable[typing.Any]
+        ] = None,
+        delete_sql_args: typing.Callable[[Context, dict], typing.Iterable[typing.Any]] = None,
+        cache_callback: typing.Optional[
+            typing.Callable[[Context, typing.List[typing.Any]], None]
+        ] = None,
+        cache_delete_callback: typing.Optional[
+            typing.Callable[[Context, typing.List[typing.Any]], None]
+        ] = None,
+        cache_delete_args: typing.Optional[
+            typing.Callable[[dict], typing.Iterable[typing.Any]]
+        ] = None,
+    ):
         """
         Args:
             select_sql (str): The SQL that should be used to select the rows to be displayed from the database.
@@ -420,6 +439,7 @@ class MenuIterable(Menu, Option):
             args = self.insert_sql_args(ctx, data)
             async with ctx.bot.database() as db:
                 await db(self.insert_sql, *args)
+
         return wrapper
 
     def delete_database_call(self, row):
@@ -431,6 +451,7 @@ class MenuIterable(Menu, Option):
             args = self.delete_sql_args(ctx, row)
             async with ctx.bot.database() as db:
                 await db(self.delete_sql, *args)
+
         return wrapper
 
     async def get_options(self, ctx: commands.SlashContext, force_regenerate: bool = False):
@@ -453,7 +474,7 @@ class MenuIterable(Menu, Option):
                 display=self.row_text_display(ctx, i),
                 component_display=self.row_component_display(ctx, i),
                 callback=self.delete_database_call(i),
-                cache_callback=self.cache_delete_callback(*list(self.cache_delete_args(i)))
+                cache_callback=self.cache_delete_callback(*list(self.cache_delete_args(i))),
             )
             v._button_style = discord.ui.ButtonStyle.danger
             generated.append(v)
@@ -465,7 +486,7 @@ class MenuIterable(Menu, Option):
                 component_display="Add New",
                 converters=self.converters,
                 callback=self.insert_database_call(),
-                cache_callback=self.cache_callback
+                cache_callback=self.cache_callback,
             )
             v._button_style = discord.ui.ButtonStyle.secondary
             generated.append(v)
