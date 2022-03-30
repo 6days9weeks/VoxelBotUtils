@@ -2,8 +2,9 @@ import sys
 import typing
 from importlib import metadata
 
-import discord
 import psutil
+
+import discord
 from discord.ext import commands
 
 from . import utils as vbu
@@ -143,7 +144,7 @@ class BotStats(vbu.Cog):
         mem_usage = psutil.Process().memory_full_info().uss / 1024 ** 2
         cpu_usage = psutil.cpu_percent()
         embed.add_field(name="Process", value=f"{mem_usage:.2f} MiB\n{cpu_usage:.2f}% CPU")
-        
+
         # Add guild count
         if self.bot.guilds:
             if self.bot.shard_count != len((self.bot.shard_ids or [0])):

@@ -75,46 +75,46 @@ class Menu(MenuDisplayable):
 
     @typing.overload
     def create_cog(
-            self,
-            bot=None,
-            *,
-            cog_name: str = "Bot Settings",
-            name: str = "settings",
-            aliases: typing.List[str] = ["setup"],
-            permissions: typing.List[str] = None,
-            post_invoke: MaybeCoroContextCallable = None,
-            guild_only: bool = True,
-            **command_kwargs
-            ) -> typing.Type[commands.Cog]:
+        self,
+        bot=None,
+        *,
+        cog_name: str = "Bot Settings",
+        name: str = "settings",
+        aliases: typing.List[str] = ["setup"],
+        permissions: typing.List[str] = None,
+        post_invoke: MaybeCoroContextCallable = None,
+        guild_only: bool = True,
+        **command_kwargs,
+    ) -> typing.Type[commands.Cog]:
         ...
 
     @typing.overload
     def create_cog(
-            self,
-            bot: Bot,
-            *,
-            cog_name: str = "Bot Settings",
-            name: str = "settings",
-            aliases: typing.List[str] = ["setup"],
-            permissions: typing.List[str] = None,
-            post_invoke: MaybeCoroContextCallable = None,
-            guild_only: bool = True,
-            **command_kwargs
-            ) -> commands.Cog:
+        self,
+        bot: Bot,
+        *,
+        cog_name: str = "Bot Settings",
+        name: str = "settings",
+        aliases: typing.List[str] = ["setup"],
+        permissions: typing.List[str] = None,
+        post_invoke: MaybeCoroContextCallable = None,
+        guild_only: bool = True,
+        **command_kwargs,
+    ) -> commands.Cog:
         ...
 
     def create_cog(
-            self,
-            bot: typing.Optional[Bot] = None,
-            *,
-            cog_name: str = "Bot Settings",
-            name: str = "settings",
-            aliases: typing.List[str] = ["setup"],
-            permissions: typing.List[str] = None,
-            post_invoke: MaybeCoroContextCallable = None,
-            guild_only: bool = True,
-            **command_kwargs
-            ) -> typing.Union[commands.Cog, typing.Type[commands.Cog]]:
+        self,
+        bot: typing.Optional[Bot] = None,
+        *,
+        cog_name: str = "Bot Settings",
+        name: str = "settings",
+        aliases: typing.List[str] = ["setup"],
+        permissions: typing.List[str] = None,
+        post_invoke: MaybeCoroContextCallable = None,
+        guild_only: bool = True,
+        **command_kwargs,
+    ) -> typing.Union[commands.Cog, typing.Type[commands.Cog]]:
         """
         Creates a cog that can be loaded into the bot in a setup method.
 
@@ -180,7 +180,9 @@ class Menu(MenuDisplayable):
                 if ctx.interaction.guild_id:
                     guild = await ctx.bot.fetch_guild(ctx.interaction.guild_id)
                     channels = await guild.fetch_channels()
-                    guild._channels = {i.id: i for i in channels}  # Fetching a guild doesn't set channels :/
+                    guild._channels = {
+                        i.id: i for i in channels
+                    }  # Fetching a guild doesn't set channels :/
                     ctx._guild = guild
 
                 # Start the menu
@@ -198,7 +200,9 @@ class Menu(MenuDisplayable):
             return NestedCog(bot)
         return NestedCog
 
-    async def get_options(self, ctx: commands.SlashContext, force_regenerate: bool = False) -> typing.List[Option]:
+    async def get_options(
+        self, ctx: commands.SlashContext, force_regenerate: bool = False
+    ) -> typing.List[Option]:
         """
         Get all of the options for an instance.
         This method has an open database instance in :code:`ctx.database`.
@@ -221,14 +225,16 @@ class Menu(MenuDisplayable):
 
         # Set up our base case
         sendable_data: dict = await self.get_sendable_data(ctx)
-        sent_components: discord.ui.MessageComponents = sendable_data['components']
+        sent_components: discord.ui.MessageComponents = sendable_data["components"]
         menu_message: discord.Message
 
         # Send the initial message
         if not isinstance(ctx, commands.SlashContext):
             menu_message = await ctx.send(**sendable_data)  # No interaction?
         elif ctx.interaction.response.is_done:
-            menu_message = await ctx.interaction.followup.send(**sendable_data)  # Deferred interaction
+            menu_message = await ctx.interaction.followup.send(
+                **sendable_data
+            )  # Deferred interaction
         else:
             await ctx.interaction.response.defer()
             menu_message = await ctx.interaction.followup.send(**sendable_data)
@@ -240,10 +246,12 @@ class Menu(MenuDisplayable):
                     return False
                 if payload.user.id == ctx.interaction.user.id:
                     return True
-                ctx.bot.loop.create_task(payload.respond(
-                    f"Only {ctx.interaction.user.mention} can interact with these buttons.",
-                    ephemeral=True,
-                ))
+                ctx.bot.loop.create_task(
+                    payload.respond(
+                        f"Only {ctx.interaction.user.mention} can interact with these buttons.",
+                        ephemeral=True,
+                    )
+                )
                 return False
 
             return button_check
@@ -259,7 +267,9 @@ class Menu(MenuDisplayable):
                     timeout=60.0,
                 )
                 ctx.interaction = payload
-                await payload.response.edit_message(components=sent_components.disable_components())
+                await payload.response.edit_message(
+                    components=sent_components.disable_components()
+                )
             except asyncio.TimeoutError:
                 break
 
@@ -297,7 +307,7 @@ class Menu(MenuDisplayable):
 
             # Edit the message with our new buttons
             sendable_data = await self.get_sendable_data(ctx)
-            sent_components = sendable_data['components']
+            sent_components = sendable_data["components"]
             menu_message = await ctx.interaction.followup.send(**sendable_data)
 
         # Disable the buttons before we leave
@@ -305,7 +315,9 @@ class Menu(MenuDisplayable):
             if delete_message:
                 await ctx.interaction.delete_original_message()
             else:
-                await ctx.interaction.edit_original_message(components=sent_components.disable_components())
+                await ctx.interaction.edit_original_message(
+                    components=sent_components.disable_components()
+                )
         except Exception:
             pass
 
