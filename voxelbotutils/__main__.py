@@ -97,7 +97,7 @@ def get_default_program_arguments() -> argparse.ArgumentParser:
         "--shardcount",
         nargs="?",
         type=int,
-        default=None,
+        default=1,
         help="The amount of shards that the bot should be using.",
     )
     bot_subparser.add_argument(
