@@ -5,7 +5,6 @@ from importlib import metadata
 import psutil
 
 import discord
-import psutil
 from discord.ext import commands
 
 from . import utils as vbu
