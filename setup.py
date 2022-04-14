@@ -49,7 +49,7 @@ if version.endswith(("a", "b", "rc")):
 # Set up the requirements
 requirements = [
     # Main requirements
-    "git+https://github.com/6days9weeks/Novus.git@siesta",
+    "novus @ git+https://github.com/6days9weeks/Novus.git@siesta#egg=novus",
     "toml",
     "aiosqlite",
     "aioredis>=1.3,<2.0",
