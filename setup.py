@@ -46,7 +46,7 @@ if version.endswith(('a', 'b', 'rc')):
 # Set up the requirements
 requirements = [
     # Main requirements
-    "novus>=0.0.8",
+    "git+https://github.com/6days9weeks/Novus.git@siesta",
     "toml",
     "aiosqlite",
     "aioredis>=1.3,<2.0",
