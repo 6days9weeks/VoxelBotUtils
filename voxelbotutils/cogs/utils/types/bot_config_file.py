@@ -2,7 +2,6 @@ from __future__ import annotations
 
 from typing import Dict, List, Literal, Optional, TypedDict
 
-
 __all__ = (
     "_EventWebhookEvents",
     "_EventWebhook",
