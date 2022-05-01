@@ -4,8 +4,13 @@ import logging
 import typing
 
 if typing.TYPE_CHECKING:
-    from .types import (DatabaseConfig, DriverConnection, DriverPool,
-                        DriverWrapper, UserDatabaseConfig)
+    from .types import (
+        DatabaseConfig,
+        DriverConnection,
+        DriverPool,
+        DriverWrapper,
+        UserDatabaseConfig,
+    )
 
 
 class DatabaseTransaction(object):
