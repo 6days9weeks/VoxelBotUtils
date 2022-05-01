@@ -37,14 +37,6 @@ class AbstractMentionable(discord.Object):
 
 
 class ContextMixin:
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.original_author_id: typing.Optional[int]
-        try:
-            self.original_author_id = self.author.id
-        except AttributeError:
-            self.original_author_id = None
-
     def get_mentionable_channel(
         self, channel_id: int, fallback: str = "null"
     ) -> AbstractMentionable:
@@ -97,6 +89,14 @@ class Context(commands.Context, ContextMixin, typing.Generic[GuildT]):
 
     guild: GuildT
 
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.original_author_id: typing.Optional[int]
+        try:
+            self.original_author_id = self.author.id
+        except AttributeError:
+            self.original_author_id = None
+
     async def okay(self) -> None:
         """
         Adds the okay hand reaction to a message.
@@ -108,6 +108,14 @@ class Context(commands.Context, ContextMixin, typing.Generic[GuildT]):
 class SlashContext(commands.SlashContext, ContextMixin, typing.Generic[GuildT]):
 
     guild: GuildT
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.original_author_id: typing.Optional[int]
+        try:
+            self.original_author_id = self.author.id
+        except AttributeError:
+            self.original_author_id = None
 
     async def okay(self) -> None:
         """

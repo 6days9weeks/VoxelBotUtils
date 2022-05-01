@@ -5,13 +5,13 @@ import typing as _typing
 import discord as _discord
 from discord.ext import commands as _dpy_commands
 
-from . import checks, converters, errors, menus
-from .component_check import component_check
+from . import checks, converters, errors, menus, types
 from .context_embed import Embed
 from .custom_bot import Bot, MinimalBot
 from .custom_cog import Cog
 from .custom_command import Command, Group
-from .custom_context import AbstractMentionable, Context, PrintContext, SlashContext
+from .custom_context import (AbstractMentionable, Context, PrintContext,
+                             SlashContext)
 from .database import DatabaseTransaction, DatabaseWrapper
 from .embeddify import Embeddify
 from .help_command import HelpCommand
