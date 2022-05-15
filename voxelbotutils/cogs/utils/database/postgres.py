@@ -9,8 +9,9 @@ from .types import DriverWrapper
 if typing.TYPE_CHECKING:
     import asyncpg.pool
     import asyncpg.transaction
-    from .types import UserDatabaseConfig, DatabaseConfig
-    from .model import DatabaseWrapper, DatabaseTransaction
+
+    from .model import DatabaseTransaction, DatabaseWrapper
+    from .types import DatabaseConfig, UserDatabaseConfig
 
     class PostgresDatabaseWrapper(DatabaseWrapper):
         config: UserDatabaseConfig
@@ -27,7 +28,6 @@ if typing.TYPE_CHECKING:
 
 
 class PostgresWrapper(DriverWrapper):
-
     @staticmethod
     async def create_pool(config: DatabaseConfig) -> asyncpg.pool.Pool:
         v = await asyncpg.create_pool(**config)
@@ -35,7 +35,9 @@ class PostgresWrapper(DriverWrapper):
         return v
 
     @staticmethod
-    async def get_connection(dbw: typing.Type[PostgresDatabaseWrapper]) -> PostgresDatabaseWrapper:
+    async def get_connection(
+        dbw: typing.Type[PostgresDatabaseWrapper],
+    ) -> PostgresDatabaseWrapper:
         connection = await dbw.pool.acquire()
         v = dbw(
             conn=connection,
@@ -69,7 +71,7 @@ class PostgresWrapper(DriverWrapper):
     async def fetch(dbw: PostgresDatabaseWrapper, sql: str, *args) -> typing.List[typing.Any]:
         assert dbw.conn
         x = None
-        if 'select' in sql.casefold() or 'returning' in sql.casefold():
+        if "select" in sql.casefold() or "returning" in sql.casefold():
             x = await dbw.caller.fetch(sql, *args)
         else:
             await dbw.caller.execute(sql, *args)

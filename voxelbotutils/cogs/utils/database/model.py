@@ -5,8 +5,11 @@ import typing
 
 if typing.TYPE_CHECKING:
     from .types import (
-        UserDatabaseConfig, DatabaseConfig, DriverWrapper,
-        DriverPool, DriverConnection,
+        DatabaseConfig,
+        DriverConnection,
+        DriverPool,
+        DriverWrapper,
+        UserDatabaseConfig,
     )
 
 
@@ -26,7 +29,13 @@ class DatabaseTransaction(object):
         The connection that spawned this transaction.
     """
 
-    def __init__(self, driver: typing.Type[DriverWrapper], parent: DatabaseWrapper, *, commit_on_exit: bool = True):
+    def __init__(
+        self,
+        driver: typing.Type[DriverWrapper],
+        parent: DatabaseWrapper,
+        *,
+        commit_on_exit: bool = True,
+    ):
         """:meta private:"""
         self._driver = driver
         self.parent = parent
@@ -88,7 +97,11 @@ class DatabaseWrapper(object):
     A wrapper around your preferred database driver.
     """
 
-    __slots__ = ("conn", "is_active", "cursor",)
+    __slots__ = (
+        "conn",
+        "is_active",
+        "cursor",
+    )
 
     config: typing.ClassVar[DatabaseConfig] = None  # type: ignore
     pool: typing.ClassVar[DriverPool] = None  # type: ignore
@@ -96,11 +109,7 @@ class DatabaseWrapper(object):
     enabled: typing.ClassVar[bool] = False
     driver: typing.ClassVar[typing.Type[DriverWrapper]]
 
-    def __init__(
-            self,
-            conn=None,
-            *,
-            cursor: DriverConnection = None):
+    def __init__(self, conn=None, *, cursor: DriverConnection = None):
         """:meta private:"""
 
         self.conn = conn
@@ -125,7 +134,13 @@ class DatabaseWrapper(object):
         """
 
         # Grab the args that are valid
-        config_args = ("host", "port", "database", "user", "password",)
+        config_args = (
+            "host",
+            "port",
+            "database",
+            "user",
+            "password",
+        )
         stripped_config: DatabaseConfig = {i: o for i, o in config.items() if i in config_args}  # type: ignore
         cls.config = stripped_config
 
@@ -144,7 +159,6 @@ class DatabaseWrapper(object):
         else:
             raise RuntimeError("Invalid database type passed")
         cls.driver = Driver
-
 
         # Start and store our pool
         created = await cls.driver.create_pool(stripped_config)

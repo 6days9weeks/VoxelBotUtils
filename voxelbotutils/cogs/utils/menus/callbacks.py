@@ -23,7 +23,6 @@ class DataLocation(enum.Enum):
 
 
 class MenuCallbacks(object):
-
     @staticmethod
     def _is_discord_object(item) -> bool:
         return isinstance(
@@ -35,16 +34,16 @@ class MenuCallbacks(object):
                 discord.Member,
                 discord.Guild,
                 discord.Object,
-            )
+            ),
         )
 
     @classmethod
     def set_table_column(
-            cls,
-            data_location: DataLocation,
-            table_name: str,
-            column_name: str,
-            ) -> typing.Coroutine[typing.Any, typing.Any, None]:
+        cls,
+        data_location: DataLocation,
+        table_name: str,
+        column_name: str,
+    ) -> typing.Coroutine[typing.Any, typing.Any, None]:
         """
         Returns a wrapper that updates the guild settings table for the bot's database.
 
@@ -61,37 +60,51 @@ class MenuCallbacks(object):
 
         async def wrapper(ctx, data: list):
             prep = ctx.bot.database.driver().prepare()
-            insert_sql = f"""INSERT INTO {{0}} ({{1}}, {{2}}) VALUES ({next(prep)}, {next(prep)})"""
+            insert_sql = (
+                f"""INSERT INTO {{0}} ({{1}}, {{2}}) VALUES ({next(prep)}, {next(prep)})"""
+            )
             prep = ctx.bot.database.driver().prepare()
             conflict_sql = f"""UPDATE {{0}} SET {{2}}={next(prep)} WHERE {{1}}={next(prep)}"""
             args = (
                 table_name,
-                "guild_id" if data_location == DataLocation.GUILD else "user_id" if data_location == DataLocation.USER else None,
-                column_name
+                "guild_id"
+                if data_location == DataLocation.GUILD
+                else "user_id"
+                if data_location == DataLocation.USER
+                else None,
+                column_name,
             )
             data = [i.id if cls._is_discord_object(i) else i for i in data]
             async with ctx.bot.database() as db:
                 try:
                     await db(
                         insert_sql.format(*args),
-                        ctx.guild.id if data_location == DataLocation.GUILD else ctx.author.id if data_location == DataLocation.USER else None,
+                        ctx.guild.id
+                        if data_location == DataLocation.GUILD
+                        else ctx.author.id
+                        if data_location == DataLocation.USER
+                        else None,
                         *data,
                     )
                 except Exception:  # Hopefully it's a unique violation error
                     await db(
                         conflict_sql.format(*args),
                         *data,
-                        ctx.guild.id if data_location == DataLocation.GUILD else ctx.author.id if data_location == DataLocation.USER else None,
+                        ctx.guild.id
+                        if data_location == DataLocation.GUILD
+                        else ctx.author.id
+                        if data_location == DataLocation.USER
+                        else None,
                     )
 
         return wrapper
 
     @classmethod
     def set_cache_from_key(
-            cls,
-            data_location: DataLocation,
-            *settings_path: str,
-            ) -> typing.Callable[[Context, typing.List[typing.Any]], None]:
+        cls,
+        data_location: DataLocation,
+        *settings_path: str,
+    ) -> typing.Callable[[Context, typing.List[typing.Any]], None]:
         """
         Returns a wrapper that changes the :attr:`voxelbotutils.Bot.guild_settings` internal cache.
 
@@ -123,10 +136,10 @@ class MenuCallbacks(object):
 
     @classmethod
     def set_cache_from_keypair(
-            cls,
-            data_location: DataLocation,
-            *settings_path: str,
-            ) -> typing.Callable[[Context, typing.List[typing.Any]], None]:
+        cls,
+        data_location: DataLocation,
+        *settings_path: str,
+    ) -> typing.Callable[[Context, typing.List[typing.Any]], None]:
         """
         Returns a wrapper that changes the :attr:`voxelbotutils.Bot.guild_settings` internal cache.
 
@@ -162,10 +175,10 @@ class MenuCallbacks(object):
 
     @classmethod
     def set_iterable_list_cache(
-            cls,
-            data_location: DataLocation,
-            *settings_path: str,
-            ) -> typing.Callable[[Context, typing.List[typing.Any]], None]:
+        cls,
+        data_location: DataLocation,
+        *settings_path: str,
+    ) -> typing.Callable[[Context, typing.List[typing.Any]], None]:
         """
         Returns a wrapper that changes the :attr:`voxelbotutils.Bot.guild_settings` internal cache.
 
@@ -201,10 +214,10 @@ class MenuCallbacks(object):
 
     @classmethod
     def delete_iterable_dict_cache(
-            cls,
-            data_location: DataLocation,
-            *settings_path: str,
-            ) -> typing.Callable[[str], typing.Callable[[Context, typing.List[typing.Any]], None]]:
+        cls,
+        data_location: DataLocation,
+        *settings_path: str,
+    ) -> typing.Callable[[str], typing.Callable[[Context, typing.List[typing.Any]], None]]:
         """
         Returns a wrapper that changes the :attr:`voxelbotutils.Bot.guild_settings` internal cache.
         Gives a nested function that takes a :code:`key` argument that acts as the primary key of the dict.
@@ -233,15 +246,17 @@ class MenuCallbacks(object):
                 for i in settings_path:
                     d = d.setdefault(i, dict())
                 d.pop(key, None)
+
             return wrapper
+
         return inner
 
     @classmethod
     def delete_iterable_list_cache(
-            cls,
-            data_location: DataLocation,
-            *settings_path: str,
-            ) -> typing.Callable[[str], typing.Callable[[Context, typing.List[typing.Any]], None]]:
+        cls,
+        data_location: DataLocation,
+        *settings_path: str,
+    ) -> typing.Callable[[str], typing.Callable[[Context, typing.List[typing.Any]], None]]:
         """
         Returns a wrapper that changes the :attr:`voxelbotutils.Bot.guild_settings` internal cache.
         Gives a nested function that takes a :code:`value` argument that acts as the data to delete.
@@ -274,5 +289,7 @@ class MenuCallbacks(object):
                     return
                 else:
                     settings_list.remove(value)
+
             return wrapper
+
         return inner

@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-import typing
 import asyncio
 import inspect
+import typing
 
 import discord
 from discord.ext import commands
@@ -37,15 +37,15 @@ class Paginator:
     """
 
     def __init__(
-            self,
-            data: typing.Union[typing.Sequence, typing.Generator, typing.Callable[[int], typing.Any]],
-            *,
-            per_page: int = 10,
-            formatter: typing.Callable[
-                [Paginator, typing.Sequence[typing.Any]],
-                typing.Union[str, discord.Embed, dict]
-            ] = None,
-            ):
+        self,
+        data: typing.Union[typing.Sequence, typing.Generator, typing.Callable[[int], typing.Any]],
+        *,
+        per_page: int = 10,
+        formatter: typing.Callable[
+            [Paginator, typing.Sequence[typing.Any]],
+            typing.Union[str, discord.Embed, dict],
+        ] = None,
+    ):
         """
         Args:
             data (Union[Sequence, Generator, Callable[[int], Any]]): The
@@ -62,7 +62,10 @@ class Paginator:
         """
         self.data = data
         self.per_page: int = per_page
-        self.formatter: typing.Callable[[Paginator, typing.Sequence[typing.Any]], typing.Union[str, discord.Embed, dict]]
+        self.formatter: typing.Callable[
+            [Paginator, typing.Sequence[typing.Any]],
+            typing.Union[str, discord.Embed, dict],
+        ]
         if formatter is None:
             self.formatter = self.default_list_formatter
         else:
@@ -70,17 +73,21 @@ class Paginator:
         self.current_page: int = None
         self._page_cache = {}
 
-        self.max_pages: int = '?'
-        self._data_is_generator = any((
-            inspect.isasyncgenfunction(self.data),
-            inspect.isasyncgen(self.data),
-            inspect.isgeneratorfunction(self.data),
-            inspect.isgenerator(self.data),
-        ))
-        self._data_is_function = any((
-            inspect.isfunction(self.data),
-            inspect.iscoroutine(self.data),
-        ))
+        self.max_pages: int = "?"
+        self._data_is_generator = any(
+            (
+                inspect.isasyncgenfunction(self.data),
+                inspect.isasyncgen(self.data),
+                inspect.isgeneratorfunction(self.data),
+                inspect.isgenerator(self.data),
+            )
+        )
+        self._data_is_function = any(
+            (
+                inspect.isfunction(self.data),
+                inspect.iscoroutine(self.data),
+            )
+        )
         self._data_is_iterable = not (self._data_is_generator or self._data_is_function)
         if self._data_is_iterable:
             pages, left_over = divmod(len(data), self.per_page)
@@ -132,7 +139,7 @@ class Paginator:
                 payload = {"embeds": [payload]}
             elif isinstance(payload, str):
                 payload = {"content": payload}
-            if (embed := payload.pop("embed", None)):
+            if embed := payload.pop("embed", None):
                 payload.update({"embeds": [embed]})
 
             # Set a default for these things
@@ -155,7 +162,9 @@ class Paginator:
             interaction = None
             try:
                 check = lambda p: p.user.id == ctx.author.id and p.message.id == self._message.id
-                interaction = await ctx.bot.wait_for("component_interaction", check=check, timeout=timeout)
+                interaction = await ctx.bot.wait_for(
+                    "component_interaction", check=check, timeout=timeout
+                )
                 await interaction.response.defer_update()
             except asyncio.TimeoutError:
                 break
@@ -181,7 +190,9 @@ class Paginator:
                 self.current_page = 0
 
         # Let us break from the loop
-        ctx.bot.loop.create_task(self._edit_message(ctx, components=components.disable_components()))
+        ctx.bot.loop.create_task(
+            self._edit_message(ctx, components=components.disable_components())
+        )
 
     def get_pagination_components(self):
         components = discord.ui.MessageComponents(
@@ -242,7 +253,7 @@ class Paginator:
             elif inspect.isfunction(self.data):
                 v = self.data(page_number)
             else:
-                v = self.data[page_number * self.per_page: (page_number + 1) * self.per_page]
+                v = self.data[page_number * self.per_page : (page_number + 1) * self.per_page]
             self._page_cache[page_number] = v
         except (StopIteration, StopAsyncIteration):
             self.max_pages = page_number
@@ -251,7 +262,7 @@ class Paginator:
         return self._page_cache[page_number]
 
     @staticmethod
-    def default_list_formatter(m: 'Paginator', d: typing.List[typing.Union[str, discord.Embed]]):
+    def default_list_formatter(m: "Paginator", d: typing.List[typing.Union[str, discord.Embed]]):
         """
         The default list formatter for embeds. Takes the paginator instance and the list of data
         to be displayed, and returns a dictionary of kwargs for a `Message.edit`.
@@ -259,15 +270,12 @@ class Paginator:
 
         if isinstance(d[0], discord.Embed):
             return {"embeds": d}
-        return Embed(
-            use_random_colour=True,
-            description="\n".join(d),
-        ).set_footer(
+        return Embed(use_random_colour=True, description="\n".join(d),).set_footer(
             f"Page {m.current_page + 1}/{m.max_pages}",
         )
 
     @staticmethod
-    def default_ranked_list_formatter(m: 'Paginator', d: typing.List[str]):
+    def default_ranked_list_formatter(m: "Paginator", d: typing.List[str]):
         """
         The default list formatter for embeds. Takes the paginator instance
         and the list of strings to be displayed, and returns a dictionary of
@@ -276,10 +284,9 @@ class Paginator:
 
         return Embed(
             use_random_colour=True,
-            description="\n".join([
-                f"{i}. {o}"
-                for i, o in enumerate(d, start=(m.current_page * m.per_page) + 1)
-            ])
+            description="\n".join(
+                [f"{i}. {o}" for i, o in enumerate(d, start=(m.current_page * m.per_page) + 1)]
+            ),
         ).set_footer(
             f"Page {m.current_page + 1}/{m.max_pages}",
         )

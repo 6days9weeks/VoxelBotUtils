@@ -7,8 +7,8 @@ import aiomysql
 from .types import DriverWrapper
 
 if typing.TYPE_CHECKING:
-    from .types import UserDatabaseConfig, DatabaseConfig
-    from .model import DatabaseWrapper, DatabaseTransaction
+    from .model import DatabaseTransaction, DatabaseWrapper
+    from .types import DatabaseConfig, UserDatabaseConfig
 
     class MysqlDatabaseWrapper(DatabaseWrapper):
         config: UserDatabaseConfig
@@ -25,13 +25,14 @@ if typing.TYPE_CHECKING:
 
 
 class MysqlWrapper(DriverWrapper):
-
     @staticmethod
     async def create_pool(config: DatabaseConfig) -> aiomysql.Pool:
         return await aiomysql.create_pool(**config, autocommit=True)
 
     @staticmethod
-    async def get_connection(dbw: typing.Type[MysqlDatabaseWrapper]) -> MysqlDatabaseWrapper:
+    async def get_connection(
+        dbw: typing.Type[MysqlDatabaseWrapper],
+    ) -> MysqlDatabaseWrapper:
         connection: aiomysql.Connection = await dbw.pool.acquire()
         cursor = await connection.cursor(aiomysql.DictCursor)
         v = dbw(

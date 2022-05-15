@@ -1,1 +1,1 @@
-from .model import DatabaseWrapper, DatabaseTransaction
+from .model import DatabaseTransaction, DatabaseWrapper

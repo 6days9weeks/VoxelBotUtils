@@ -1,5 +1,6 @@
 from typing import TypeVar, Optional, Generic, Union
 import collections
+import typing
 
 import discord
 from discord.ext import commands
@@ -128,7 +129,6 @@ class SlashContext(commands.SlashContext, ContextMixin, Generic[GuildT]):
 
 
 class _NoRequestTyping(object):
-
     async def __aenter__(self):
         pass
 
@@ -137,13 +137,11 @@ class _NoRequestTyping(object):
 
 
 class _FakeStateMessage(discord.Message):
-
     def __init__(self, state):
         self._state = state
 
 
 class PrintContext(Context):
-
     def __init__(self, bot):
         self.message = _FakeStateMessage(bot._connection)
         self.bot = bot
@@ -151,7 +149,7 @@ class PrintContext(Context):
 
     async def send(self, content, *args, **kwargs):
         print(content, args, kwargs)
-        if (file := kwargs.get("file", None)):
+        if file := kwargs.get("file", None):
             if isinstance(file.fp, str):
                 pass
             else:
