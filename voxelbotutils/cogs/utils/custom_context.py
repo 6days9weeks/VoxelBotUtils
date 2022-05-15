@@ -1,10 +1,12 @@
+from typing import TypeVar, Optional, Generic, Union
 import collections
 import typing
 
 import discord
 from discord.ext import commands
 
-GuildT = typing.TypeVar("GuildT", None, discord.Guild, typing.Optional[discord.Guild])
+
+GuildT = TypeVar("GuildT", None, discord.Guild, Optional[discord.Guild])
 
 
 FakeResponse = collections.namedtuple("FakeResponse", ["status", "reason"])
@@ -37,9 +39,10 @@ class AbstractMentionable(discord.Object):
 
 
 class ContextMixin:
-    def get_mentionable_channel(
-        self, channel_id: int, fallback: str = "null"
-    ) -> AbstractMentionable:
+
+    guild: Optional[discord.Guild]
+
+    def get_mentionable_channel(self, channel_id: int, fallback: str = "null") -> Union[discord.TextChannel, AbstractMentionable]:
         """
         Get the mention string for a given channel ID.
 
@@ -48,7 +51,7 @@ class ContextMixin:
             fallback (str, optional): The string to fall back to if the channel isn't reachable.
 
         Returns:
-            typing.Union[discord.TextChannel, voxelbotutils.AbstractMentionable]: The mentionable channel.
+            Union[discord.TextChannel, voxelbotutils.AbstractMentionable]: The mentionable channel.
         """
 
         x = None
@@ -58,7 +61,7 @@ class ContextMixin:
             return x
         return AbstractMentionable(channel_id, fallback, fallback)
 
-    def get_mentionable_role(self, role_id: int, fallback: str = "null") -> AbstractMentionable:
+    def get_mentionable_role(self, role_id: int, fallback: str = "null") -> Union[discord.Role, AbstractMentionable]:
         """
         Get the mention string for a given role ID.
 
@@ -67,7 +70,7 @@ class ContextMixin:
             fallback (str, optional): The string to fall back to if the role isn't reachable.
 
         Returns:
-            typing.Union[discord.Role, voxelbotutils.AbstractMentionable]: The mentionable role.
+            Union[discord.Role, voxelbotutils.AbstractMentionable]: The mentionable role.
         """
 
         x = None
@@ -78,7 +81,7 @@ class ContextMixin:
         return AbstractMentionable(role_id, fallback, fallback)
 
 
-class Context(commands.Context, ContextMixin, typing.Generic[GuildT]):
+class Context(commands.Context, ContextMixin, Generic[GuildT]):
     """
     A modified version of the default :class:`discord.ext.commands.Context`.
 
@@ -91,7 +94,7 @@ class Context(commands.Context, ContextMixin, typing.Generic[GuildT]):
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.original_author_id: typing.Optional[int]
+        self.original_author_id: Optional[int]
         try:
             self.original_author_id = self.author.id
         except AttributeError:
@@ -105,13 +108,13 @@ class Context(commands.Context, ContextMixin, typing.Generic[GuildT]):
         return await self.message.add_reaction("\N{OK HAND SIGN}")
 
 
-class SlashContext(commands.SlashContext, ContextMixin, typing.Generic[GuildT]):
+class SlashContext(commands.SlashContext, ContextMixin, Generic[GuildT]):
 
     guild: GuildT
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.original_author_id: typing.Optional[int]
+        self.original_author_id: Optional[int]
         try:
             self.original_author_id = self.author.id
         except AttributeError:
