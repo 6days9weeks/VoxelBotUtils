@@ -3,7 +3,6 @@ from discord.ext import commands
 
 from . import utils as vbu
 
-
 _ = vbu.translation
 
 
@@ -33,11 +32,19 @@ class BotSettings(vbu.Cog):
         try:
             await commands.has_guild_permissions(manage_guild=True).predicate(ctx)
         except Exception:
-            return await ctx.send(_(ctx, "bot_settings").gettext("You do not have permission to change the command prefix."))
+            return await ctx.send(
+                _(ctx, "bot_settings").gettext(
+                    "You do not have permission to change the command prefix."
+                )
+            )
 
         # Validate prefix
         if len(new_prefix) > 30:
-            return await ctx.send(_(ctx, "bot_settings").gettext("The maximum length a prefix can be is 30 characters."))
+            return await ctx.send(
+                _(ctx, "bot_settings").gettext(
+                    "The maximum length a prefix can be is 30 characters."
+                )
+            )
 
         # Store setting
         self.bot.guild_settings[ctx.guild.id][prefix_column] = new_prefix

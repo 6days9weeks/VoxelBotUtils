@@ -1,10 +1,9 @@
-from typing import TypeVar, Optional, Generic, Union
 import collections
 import typing
+from typing import Generic, Optional, TypeVar, Union
 
 import discord
 from discord.ext import commands
-
 
 GuildT = TypeVar("GuildT", None, discord.Guild, Optional[discord.Guild])
 
@@ -42,7 +41,9 @@ class ContextMixin:
 
     guild: Optional[discord.Guild]
 
-    def get_mentionable_channel(self, channel_id: int, fallback: str = "null") -> Union[discord.TextChannel, AbstractMentionable]:
+    def get_mentionable_channel(
+        self, channel_id: int, fallback: str = "null"
+    ) -> Union[discord.TextChannel, AbstractMentionable]:
         """
         Get the mention string for a given channel ID.
 
@@ -61,7 +62,9 @@ class ContextMixin:
             return x
         return AbstractMentionable(channel_id, fallback, fallback)
 
-    def get_mentionable_role(self, role_id: int, fallback: str = "null") -> Union[discord.Role, AbstractMentionable]:
+    def get_mentionable_role(
+        self, role_id: int, fallback: str = "null"
+    ) -> Union[discord.Role, AbstractMentionable]:
         """
         Get the mention string for a given role ID.
 

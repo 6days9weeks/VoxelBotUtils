@@ -40,12 +40,12 @@ def minify_html(text: str) -> str:
 
 
 def translation(
-        ctx: _typing.Union[_dpy_commands.Context, _discord.Interaction, str],
-        domain: str,
-        *,
-        use_guild: bool = False,
-        **kwargs,
-        ) -> _typing.Union[_gettext.GNUTranslations, _gettext.NullTranslations]:
+    ctx: _typing.Union[_dpy_commands.Context, _discord.Interaction, str],
+    domain: str,
+    *,
+    use_guild: bool = False,
+    **kwargs,
+) -> _typing.Union[_gettext.GNUTranslations, _gettext.NullTranslations]:
     """
     Get a translation table for a given domain with the locale
     stored in a context.
